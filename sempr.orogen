@@ -1,0 +1,48 @@
+name "sempr"
+# Optionally declare the version number
+# version "0.1"
+
+# TODO: should this be the place for "message" definitions, the environment/sempr_rock thus be removed?
+# import_types_from "semprTypes.hpp"
+
+using_library "sempr_rock"
+import_types_from "sempr/ObjectMessages.hpp"
+
+# If this project uses data types that are defined in other oroGen projects,
+# these projects should be imported there as well.
+import_types_from "std"
+# import_types_from "base"
+
+# Declare a new task context (i.e., a component)
+#
+# The corresponding C++ class can be edited in tasks/Task.hpp and
+# tasks/Task.cpp, and will be put in the sempr namespace.
+task_context "SEMPREnvironment" do
+    needs_configuration
+
+    # property "config_value", "/std/string"
+    # input_port "input", "/std/string"
+    # output_port "output", "int"
+
+    # SPARQL-Query
+    # argument must be a valid SPARQL query (e.g.: SELECT ?a WHERE {?a rdf:type sempr:CoffeeMug.}).
+    # A few namespaces are already predefined: rdf, rdfs, owl, sempr, xsd
+    operation('SPARQLQuery').
+        returns('/sempr_rock/SPARQLResult').
+        argument('/std/string')
+
+    # Add an assertion to an object.
+    # Adds an rdf triple that is bound to the given object (will be removed together with the
+    # object)
+    # returns false if the object does not exist
+    operation('AddObjectAssertion').
+        returns('/bool').
+        argument('/sempr_rock/ObjectAssertion')
+
+
+    # If you want that component's updateHook() to be executed when the "input"
+    # port gets data, uncomment this and comment the 'periodic' line
+    # port_driven "input"
+    # By default, the task will be periodic with a period of 0.1
+    periodic 0.1
+end
