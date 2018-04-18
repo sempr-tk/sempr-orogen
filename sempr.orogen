@@ -6,7 +6,7 @@ name "sempr"
 # import_types_from "semprTypes.hpp"
 
 using_library "sempr_rock"
-import_types_from "sempr/ObjectMessages.hpp"
+import_types_from "sempr_rock/ObjectMessages.hpp"
 
 # If this project uses data types that are defined in other oroGen projects,
 # these projects should be imported there as well.
@@ -27,17 +27,17 @@ task_context "SEMPREnvironment" do
     # SPARQL-Query
     # argument must be a valid SPARQL query (e.g.: SELECT ?a WHERE {?a rdf:type sempr:CoffeeMug.}).
     # A few namespaces are already predefined: rdf, rdfs, owl, sempr, xsd
-    operation('SPARQLQuery').
+    operation('answerQuery').
         returns('/sempr_rock/SPARQLResult').
-        argument('/std/string')
+        argument('arg0', '/std/string')
 
     # Add an assertion to an object.
     # Adds an rdf triple that is bound to the given object (will be removed together with the
     # object)
     # returns false if the object does not exist
-    operation('AddObjectAssertion').
+    operation('addObjectAssertion').
         returns('/bool').
-        argument('/sempr_rock/ObjectAssertion')
+        argument('arg0', '/sempr_rock/ObjectAssertion')
 
 
     # If you want that component's updateHook() to be executed when the "input"
