@@ -20,11 +20,13 @@ SEMPREnvironment::~SEMPREnvironment()
 
 bool SEMPREnvironment::addObjectAssertion(::sempr_rock::ObjectAssertion const & arg0)
 {
+    std::cout << "TODO: addObjectAssertion" << '\n';
     return bool();
 }
 
 ::sempr_rock::SPARQLResult SEMPREnvironment::answerQuery(::std::string const & arg0)
 {
+    std::cout << "TODO: answerQuery" << '\n';
     return ::sempr_rock::SPARQLResult();
 }
 

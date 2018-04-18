@@ -46,3 +46,20 @@ task_context "SEMPREnvironment" do
     # By default, the task will be periodic with a period of 0.1
     periodic 0.1
 end
+
+
+# Used to test the connection to the environment representation. My attempt to use the
+# operations of the SEMPREnvironment from another component. I guess this is *not* the intended
+# way of using it, since it is not described in the orogen/rock documentation. Only the orocos
+# documentation provides some hints on how to do this, see:
+# http://www.orocos.org/stable/documentation/rtt/v2.x/doc-xml/orocos-components-manual.html
+# search for "OperationsCaller", or "getPeer("ATask")", ...
+task_context "SEMPRTestDummy" do
+    needs_configuration
+
+    # how can I define that this task requires a sempr environment with the given operations?
+    # well.. at least a property to set the name of the component would be useful I guess.
+    property "sempr_task_name", "/std/string"
+
+    periodic 1.0
+end
