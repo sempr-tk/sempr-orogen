@@ -4,33 +4,25 @@
 #define SEMPR_SEMPRTESTDUMMY_TASK_HPP
 
 #include "sempr/SEMPRTestDummyBase.hpp"
+#include <sempr_rock/ObjectMessages.hpp>
+
 
 namespace sempr{
 
     /*! \class SEMPRTestDummy
-     * \brief The task context provides and requires services. It uses an ExecutionEngine to perform its functions.
-     * Essential interfaces are operations, data flow ports and properties. These interfaces have been defined using the oroGen specification.
-     * In order to modify the interfaces you should (re)use oroGen and rely on the associated workflow.
-     * Used to test the connection to the environment representation. My attempt to use the
-operations of the SEMPREnvironment from another component. I guess this is *not* the intended
-way of using it, since it is not described in the orogen/rock documentation. Only the orocos
-documentation provides some hints on how to do this, see:
-http://www.orocos.org/stable/documentation/rtt/v2.x/doc-xml/orocos-components-manual.html
-search for "OperationsCaller", or "getPeer("ATask")", ...
-     * \details
-     * The name of a TaskContext is primarily defined via:
-     \verbatim
-     deployment 'deployment_name'
-         task('custom_task_name','sempr::SEMPRTestDummy')
-     end
-     \endverbatim
-     *  It can be dynamically adapted when the deployment is called with a prefix argument.
+     * \brief A simple test-client to the environment representation. Shows how to use its operations.
      */
     class SEMPRTestDummy : public SEMPRTestDummyBase
     {
 	friend class SEMPRTestDummyBase;
     protected:
 
+        // maintain a pointer to the sempr-environment task.
+        TaskContext* sempr_;
+
+        // for convenience: also store the OperationCallers.
+        RTT::OperationCaller<bool(::sempr_rock::ObjectAssertion const &)> addObjectAssertion_;
+        RTT::OperationCaller<sempr_rock::SPARQLResult(std::string const &)> answerQuery_;
 
 
     public:
@@ -43,7 +35,7 @@ search for "OperationsCaller", or "getPeer("ATask")", ...
         /** TaskContext constructor for SEMPRTestDummy
          * \param name Name of the task. This name needs to be unique to make it identifiable for nameservices.
          * \param engine The RTT Execution engine to be used for this task, which serialises the execution of all commands, programs, state machines and incoming events for a task.
-         * 
+         *
          */
         SEMPRTestDummy(std::string const& name, RTT::ExecutionEngine* engine);
 
@@ -112,4 +104,3 @@ search for "OperationsCaller", or "getPeer("ATask")", ...
 }
 
 #endif
-

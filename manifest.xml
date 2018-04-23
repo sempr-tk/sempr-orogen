@@ -1,6 +1,6 @@
 <package>
   <description brief="ROCK wrapper for the environment representation (SEMPR)">
-  
+
   </description>
   <author>Nils Niemann/nils.niemann@dfki.de</author>
   <license></license>
@@ -15,4 +15,6 @@
   <depend package="dummy-dependency-n" />
   -->
   <depend package="environment/sempr_rock" />
+  <depend package="sempr/sempr-core" />
+  <depend package="simulation/orogen/mars" />
 </package>

@@ -26,8 +26,23 @@ bool SEMPREnvironment::addObjectAssertion(::sempr_rock::ObjectAssertion const & 
 
 ::sempr_rock::SPARQLResult SEMPREnvironment::answerQuery(::std::string const & arg0)
 {
-    std::cout << "TODO: answerQuery" << '\n';
-    return ::sempr_rock::SPARQLResult();
+    std::cout << "TODO: answerQuery:" << '\n';
+    std::cout << arg0 << '\n';
+
+    sempr_rock::SPARQLResult results;
+    sempr_rock::KVMap kvmap;
+
+    std::map<std::string, std::string> map;
+    map["a"] = "Just";
+    map["b"] = "some";
+    map["c"] = "dummy";
+    map["d"] = "data";
+
+    kvmap.fromMap(map);
+
+    results.results.push_back(kvmap);
+
+    return results;
 }
 
 /// The following lines are template definitions for the various state machine
