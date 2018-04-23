@@ -23,6 +23,16 @@ namespace sempr {
 	friend class SEMPREnvironmentBase;
     protected:
 
+        /**
+            A SEMPR-instance.
+        */
+        sempr::core::Core* sempr_;
+
+        /**
+            Initialize the sempr instance: Database, modules, ...
+        */
+        void initializeSEMPR();
+
         /* Add an assertion to an object.
         Adds an rdf triple that is bound to the given object (will be removed together with the
         object)
