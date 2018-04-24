@@ -6,6 +6,7 @@
 #include <sempr/storage/ODBStorage.hpp>
 #include <sempr/processing/SopranoModule.hpp>
 #include <sempr/processing/DBUpdateModule.hpp>
+#include <sempr/processing/DebugModule.hpp>
 #include <sempr/processing/ActiveObjectStore.hpp>
 
 #include <sempr/query/SPARQLQuery.hpp>
@@ -48,6 +49,7 @@ void SEMPREnvironment::initializeSEMPR()
 {
     ODBStorage::Ptr storage( new ODBStorage() );
 
+    DebugModule::Ptr debug( new DebugModule() );
     DBUpdateModule::Ptr updater( new DBUpdateModule(storage) );
     ActiveObjectStore::Ptr active( new ActiveObjectStore() );
     SopranoModule::Ptr semantic( new SopranoModule() );
@@ -59,6 +61,7 @@ void SEMPREnvironment::initializeSEMPR()
     );
 
     sempr_ = new sempr::core::Core( storage );
+    // sempr_->addModule(debug);
     sempr_->addModule(updater);
     sempr_->addModule(active);
     sempr_->addModule(semantic);

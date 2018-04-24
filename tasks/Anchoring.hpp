@@ -49,6 +49,7 @@ void getMatchingObjects(sempr::core::Core* sempr,
                 return obj->type() == type;
             }
         );
+        sempr->answerQuery(query);
 
         // remove all that have been used before
         for (auto it = query->results.begin(); it != query->results.end();)
@@ -121,6 +122,7 @@ entity::SpatialObject::Ptr createSpatialObject(sempr::core::Core* sempr)
     entity::SpatialObject::Ptr obj(new entity::SpatialObject());
     obj->geometry()->setCS(objcs);
     obj->created();
+    obj->changed();
 
     return obj;
 }
@@ -132,7 +134,7 @@ entity::SpatialObject::Ptr createSpatialObject(sempr::core::Core* sempr)
 void updateSpatialObject(entity::SpatialObject::Ptr obj, Detection const & detectionPair)
 {
     obj->geometry()->geometry()->empty();
-    const char* ptwkt = "POINT Z(0 0 0)";
+    const char* ptwkt = "GEOMETRYCOLLECTION(POINTZ(0 0 0))";
     obj->geometry()->geometry()->importFromWkt(&ptwkt); // TODO
 
     obj->type(detectionPair.first, 1.0);    // TODO type confidence
