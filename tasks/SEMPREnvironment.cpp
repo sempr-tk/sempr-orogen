@@ -25,6 +25,7 @@
 
 #include <iostream>
 #include <iomanip>
+#include <vector>
 
 using namespace sempr;
 using namespace sempr::storage;
@@ -66,6 +67,13 @@ void SEMPREnvironment::initializeSEMPR()
     sempr_->addModule(active);
     sempr_->addModule(semantic);
 
+    // load everything
+    std::vector<Entity::Ptr> everything;
+    storage->loadAll(everything);
+    for (auto e : everything) {
+        std::cout << "loaded " << e->id() << std::endl;
+        e->loaded();
+    }
 }
 
 
