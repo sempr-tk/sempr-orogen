@@ -61,7 +61,7 @@ void SEMPREnvironment::initializeSEMPR()
         )
     );
 
-    sempr_ = new sempr::core::Core( storage );
+    sempr_ = new sempr::core::Core();
     // sempr_->addModule(debug);
     sempr_->addModule(updater);
     sempr_->addModule(active);
