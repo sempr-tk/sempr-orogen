@@ -15,7 +15,7 @@
   <depend package="dummy-dependency-n" />
   -->
   <depend package="sempr/sempr-rock" />
-  <!-- <depend package="sempr/sempr-core" />  uncommented due to problems with rebuilding gdal-->
+  <depend package="sempr/sempr-core" />
   <depend package="soprano" />
   <depend package="simulation/orogen/mars" />
 </package>
