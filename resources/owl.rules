@@ -1,0 +1,12 @@
+# this file only implements a very restricted part of owl reasoning rules.
+# if you want to extend these rules, take a look at apache jenas ruleset.
+# the most interesting parts for us are:
+
+# value restrictions that allow us to infer from a class to all its individuals
+[valueRestrictions: (?c rdf:type owl:Restriction), (?c owl:onProperty ?p), (?c owl:hasValue ?v), (?x rdf:type ?c) -> (?x ?p ?v)]
+
+# and equivalent classes, to teach synonyms
+[equivalentClasses1: (?a owl:equivalentClass ?b), (?x rdf:type ?a) -> (?x rdf:type ?b)]
+
+# (which is symmetric)
+[equivalentClassesSym: (?a owl:equivalentClass ?b) -> (?b owl:equivalentClass ?a)]

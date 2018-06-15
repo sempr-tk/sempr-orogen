@@ -18,6 +18,7 @@
 #include <LocalCS_odb.h>
 #include <SpatialObject_odb.h>
 #include <RDFDocument_odb.h>
+#include <RuleSet_odb.h>
 
 #include <sempr/core/IncrementalIDGeneration.hpp>
 #include <sempr/core/IDGenUtil.hpp>
@@ -27,6 +28,7 @@
 #include <iostream>
 #include <iomanip>
 #include <vector>
+#include <fstream>
 
 using namespace sempr;
 using namespace sempr::core;
@@ -199,6 +201,33 @@ bool SEMPREnvironment::configureHook()
         sempr_->addEntity(doc);
     }
 
+
+
+    // also, load the rules
+    // but the ruleset is more or less fixed, and needs to be only loaded/created once.
+    auto rulequery = std::make_shared<ObjectQuery<RuleSet>>();
+    sempr_->answerQuery(rulequery);
+
+    // make sure old rules are removed
+    for (auto rule : rulequery->results)
+    {
+        sempr_->removeEntity(rule);
+    }
+
+    // and reload them from the file // TODO: property for filename?
+    RuleSet::Ptr rules(new RuleSet());
+    sempr_->addEntity(rules);
+
+    std::ifstream rulefile("../resources/owl.rules");
+    std::string line;
+    while (std::getline(rulefile, line))
+    {
+        if (line.find("#") != 0) {
+            rules->add(line);
+            std::cout << "adding rule: " << line << std::endl;
+        }
+    }
+    rules->changed();
 
     return true;
 }
