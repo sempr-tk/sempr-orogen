@@ -287,6 +287,9 @@ void SEMPREnvironment::errorHook()
 void SEMPREnvironment::stopHook()
 {
     SEMPREnvironmentBase::stopHook();
+
+    // persist stuff every time the component is stopped.
+    sempr_->getModule<DBUpdateModule>()->updateDatabase();
 }
 void SEMPREnvironment::cleanupHook()
 {
