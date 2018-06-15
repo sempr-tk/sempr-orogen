@@ -17,6 +17,7 @@
 
 #include <LocalCS_odb.h>
 #include <SpatialObject_odb.h>
+#include <RDFDocument_odb.h>
 
 #include <sempr/core/IncrementalIDGeneration.hpp>
 #include <sempr/core/IDGenUtil.hpp>
@@ -74,18 +75,49 @@ void SEMPREnvironment::initializeSEMPR()
         std::cout << "loaded " << e->id() << std::endl;
         e->loaded();
     }
+
+    // loading the RDFDocument is considered a real configuration, so it is done in the
+    // configureHook.
 }
 
 
-SEMPREnvironment::~SEMPREnvironment()
-{
-
-}
+// SEMPREnvironment::~SEMPREnvironment()
+// {
+//
+// }
 
 bool SEMPREnvironment::addObjectAssertion(::sempr_rock::ObjectAssertion const & arg0)
 {
-    std::cout << "TODO: addObjectAssertion" << '\n'; // TODO
-    return false;
+    // get the object:
+    auto query = std::make_shared<ObjectQuery<SpatialObject>>(
+        [&arg0](SpatialObject::Ptr obj) {
+            std::cout << "check object: " << obj->id() << std::endl;
+            return (obj->id() == arg0.objectId) || ("sempr:" + obj->id() == arg0.objectId);
+        }
+    );
+    sempr_->answerQuery(query);
+
+    if(query->results.empty())
+    {
+        std::cout << "Couldn't find object with id: " << arg0.objectId << std::endl;
+        return false; // object not found.
+    }
+
+    // add the key/value pair
+    auto obj = query->results[0];
+    std::string base = arg0.baseURI;
+    if (base.empty()) base = sempr::baseURI();
+
+    // save as RDFResource to *not* change e.g. '<whatever>' to '"<whatever>"^^xsd:string'
+    (*obj->properties())(arg0.key, base) = RDFResource(arg0.value);
+
+    return true;
+}
+
+
+void SEMPREnvironment::addTriple(const ::sempr_rock::Triple &arg0)
+{
+    std::cout << "TODO: addTriple" << std::endl; // TODO
 }
 
 ::sempr_rock::SPARQLResult SEMPREnvironment::answerQuery(::std::string const & arg0)
@@ -117,6 +149,28 @@ bool SEMPREnvironment::configureHook()
 {
     if (! SEMPREnvironmentBase::configureHook())
         return false;
+
+
+    // get the RDFDocument that contains the basic model as loaded from a file
+    // (assumption: only one instance of this class present)
+    auto docquery = std::make_shared<ObjectQuery<RDFDocument>>();
+    sempr_->answerQuery(docquery);
+
+    // delete it!
+    for (auto doc : docquery->results)
+    {
+        sempr_->removeEntity(doc);
+    }
+
+    // create a new one, if a owl file was given
+    std::string file = _rdf_file.get();
+    if (!file.empty())
+    {
+        auto doc = RDFDocument::FromFile(file);
+        sempr_->addEntity(doc);
+    }
+
+
     return true;
 }
 bool SEMPREnvironment::startHook()
@@ -129,7 +183,6 @@ void SEMPREnvironment::updateHook()
 {
     SEMPREnvironmentBase::updateHook();
 
-    // TODO: get object detections msgs
     // TODO: anchoring
 
     // update only on input of detectionArray

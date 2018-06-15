@@ -38,13 +38,21 @@ namespace sempr {
         object)
         returns false if the object does not exist
          */
-        virtual bool addObjectAssertion(::sempr_rock::ObjectAssertion const & arg0);
+        virtual bool addObjectAssertion(::sempr_rock::ObjectAssertion const & arg0) override;
+
+
+        /**
+            Add a triple to the "global" set of knowledge, not bound to a specific (observed)
+            object.
+        */
+        virtual void addTriple(::sempr_rock::Triple const & arg0) override;
+
 
         /* SPARQL-Query
         argument must be a valid SPARQL query (e.g.: SELECT ?a WHERE {?a rdf:type sempr:CoffeeMug.}).
         A few namespaces are already predefined: rdf, rdfs, owl, sempr, xsd
          */
-        virtual ::sempr_rock::SPARQLResult answerQuery(::std::string const & arg0);
+        virtual ::sempr_rock::SPARQLResult answerQuery(::std::string const & arg0) override;
 
     public:
         /** TaskContext constructor for SEMPREnvironment
@@ -62,7 +70,7 @@ namespace sempr {
 
         /** Default deconstructor of SEMPREnvironment
         */
-        ~SEMPREnvironment();
+        // ~SEMPREnvironment();
 
         /** This hook is called by Orocos when the state machine transitions
          * from PreOperational to Stopped. If it returns false, then the
@@ -78,14 +86,14 @@ namespace sempr {
          end
          \endverbatim
          */
-        bool configureHook();
+        bool configureHook() override;
 
         /** This hook is called by Orocos when the state machine transitions
          * from Stopped to Running. If it returns false, then the component will
          * stay in Stopped. Otherwise, it goes into Running and updateHook()
          * will be called.
          */
-        bool startHook();
+        bool startHook() override;
 
         /** This hook is called by Orocos when the component is in the Running
          * state, at each activity step. Here, the activity gives the "ticks"
@@ -101,7 +109,7 @@ namespace sempr {
          * component is stopped and recover() needs to be called before starting
          * it again. Finally, FatalError cannot be recovered.
          */
-        void updateHook();
+        void updateHook() override;
 
         /** This hook is called by Orocos when the component is in the
          * RunTimeError state, at each activity step. See the discussion in
@@ -109,18 +117,18 @@ namespace sempr {
          *
          * Call recover() to go back in the Runtime state.
          */
-        void errorHook();
+        void errorHook() override;
 
         /** This hook is called by Orocos when the state machine transitions
          * from Running to Stopped after stop() has been called.
          */
-        void stopHook();
+        void stopHook() override;
 
         /** This hook is called by Orocos when the state machine transitions
          * from Stopped to PreOperational, requiring the call to configureHook()
          * before calling start() again.
          */
-        void cleanupHook();
+        void cleanupHook() override;
     };
 }
 

@@ -22,7 +22,9 @@ import_types_from "mars"
 task_context "SEMPREnvironment" do
     needs_configuration
 
-    # property "config_value", "/std/string"
+    property("rdf_file", "/std/string").
+        doc("Path to the RDF file to initialize SEMPR with.")
+
     # input_port "input", "/std/string"
     # output_port "output", "int"
 
@@ -44,6 +46,14 @@ task_context "SEMPREnvironment" do
         returns('/bool').
         argument('arg0', '/sempr_rock/ObjectAssertion')
 
+
+    # Adds a global assertion in form of an rdf triple.
+    # TODO: This is a candidate for a port...
+    operation('addTriple').
+        argument('arg0', '/sempr_rock/Triple')
+
+    # TODO: ClearAssertions?
+    # TODO: RemoveTriple?
 
     # If you want that component's updateHook() to be executed when the "input"
     # port gets data, uncomment this and comment the 'periodic' line
