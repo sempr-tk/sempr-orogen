@@ -254,7 +254,7 @@ void SEMPREnvironment::updateHook()
     std::vector<sempr::Detection> detectionPairs;
     for (auto d : detections.detections)
     {
-        detectionPairs.push_back(Detection(d.results[0].type, d.results[0].pose.pose));
+        detectionPairs.push_back(Detection("http://trans.fit/" + d.results[0].type, d.results[0].pose.pose));
     }
 
     std::vector<entity::SpatialObject::Ptr> matches;
