@@ -29,6 +29,7 @@
 #include <vector>
 
 using namespace sempr;
+using namespace sempr::core;
 using namespace sempr::storage;
 using namespace sempr::processing;
 using namespace sempr::entity;
@@ -110,6 +111,7 @@ bool SEMPREnvironment::addObjectAssertion(::sempr_rock::ObjectAssertion const & 
 
     // save as RDFResource to *not* change e.g. '<whatever>' to '"<whatever>"^^xsd:string'
     (*obj->properties())(arg0.key, base) = RDFResource(arg0.value);
+    obj->properties()->changed();
 
     return true;
 }
@@ -117,7 +119,34 @@ bool SEMPREnvironment::addObjectAssertion(::sempr_rock::ObjectAssertion const & 
 
 void SEMPREnvironment::addTriple(const ::sempr_rock::Triple &arg0)
 {
-    std::cout << "TODO: addTriple" << std::endl; // TODO
+    // get or create a global RDFEntity to store the triples in
+    const std::string rdfID = "RDF_Triple_Assertions";
+    auto query = std::make_shared<ObjectQuery<RDFEntity>>(
+        [&rdfID](RDFEntity::Ptr e) {
+            return e->id() == rdfID;
+        }
+    );
+
+    sempr_->answerQuery(query);
+
+    RDFEntity::Ptr rdf;
+    if (query->results.empty())
+    {
+        // create a new one
+        rdf.reset(new RDFEntity(new PredefinedID(rdfID)));
+        sempr_->addEntity(rdf);
+    } else {
+        rdf = query->results[0];
+    }
+
+    // add the triple
+    Triple t;
+    t.subject = arg0.subject_;
+    t.predicate = arg0.predicate_;
+    t.object = arg0.object_;
+
+    rdf->addTriple(t);
+    rdf->changed();
 }
 
 ::sempr_rock::SPARQLResult SEMPREnvironment::answerQuery(::std::string const & arg0)
