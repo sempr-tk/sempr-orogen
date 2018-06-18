@@ -14,6 +14,27 @@
     <!-- 
     ///////////////////////////////////////////////////////////////////////////////////////
     //
+    // Data properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://trans.fit/simulationID -->
+
+    <owl:DatatypeProperty rdf:about="http://trans.fit/simulationID">
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
+        <rdfs:domain rdf:resource="http://trans.fit/SpatialObject"/>
+        <rdfs:comment>When using the fake-object-recognition, this property contains the ID the object has within the simulation. Only to be used for debug-purposes.</rdfs:comment>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
     // Classes
     //
     ///////////////////////////////////////////////////////////////////////////////////////

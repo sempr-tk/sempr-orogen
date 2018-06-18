@@ -292,14 +292,24 @@ void SEMPREnvironment::updateHook()
                     << " --> "
                     << (matches[i] ? matches[i]->id() : " nullptr ") << std::endl;
 
+
+        SpatialObject::Ptr object;
         if (!matches[i])
         {
             auto obj = createSpatialObject(sempr_);
             updateSpatialObject(obj, detectionPairs[i]);
             std::cout << "created: " << obj->id() << '\n';
+            object = obj;
+
         } else {
             updateSpatialObject(matches[i], detectionPairs[i]);
+            object = matches[i];
         }
+
+        // when using the fake object detection we also get the id of the object
+        (*object->properties())("simulationID", "http://trans.fit/") = (int) detections.detections[i].results[0].id;
+        object->properties()->changed();
+
     }
 
 }
