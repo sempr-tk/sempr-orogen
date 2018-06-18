@@ -54,6 +54,11 @@ namespace sempr {
          */
         virtual ::sempr_rock::SPARQLResult answerQuery(::std::string const & arg0) override;
 
+
+        /* Returns the pose of an object given it's id in the environment representation.
+         */
+        virtual ::base::Pose getObjectPose(::std::string const & arg0) override;
+
     public:
         /** TaskContext constructor for SEMPREnvironment
          * \param name Name of the task. This name needs to be unique to make it identifiable via nameservices.

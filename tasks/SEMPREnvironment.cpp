@@ -172,6 +172,31 @@ void SEMPREnvironment::addTriple(const ::sempr_rock::Triple &arg0)
     return results;
 }
 
+
+::base::Pose SEMPREnvironment::getObjectPose(::std::string const & arg0)
+{
+    // get the object
+    auto query = std::make_shared<ObjectQuery<SpatialObject>>(
+        [&arg0](SpatialObject::Ptr obj) {
+            return (obj->id() == arg0) || ((sempr::baseURI() + obj->id()) == arg0);
+        }
+    );
+    sempr_->answerQuery(query);
+
+    // object not found? ... uhm.
+    if (query->results.empty())
+    {
+        return base::Pose(); // what is this? identity? invalid?
+    }
+
+    // get the pose
+    auto tf = query->results[0]->geometry()->getCS()->transformationToRoot();
+    base::Pose pose;
+    pose.fromTransform(tf);
+
+    return pose;
+}
+
 /// The following lines are template definitions for the various state machine
 // hooks defined by Orocos::RTT. See SEMPREnvironment.hpp for more detailed
 // documentation about them.
