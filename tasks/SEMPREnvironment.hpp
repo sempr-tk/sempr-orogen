@@ -45,7 +45,7 @@ namespace sempr {
             Add a triple to the "global" set of knowledge, not bound to a specific (observed)
             object.
         */
-        virtual void addTriple(::sempr_rock::Triple const & arg0) override;
+        virtual bool addTriple(::sempr_rock::Triple const & arg0) override;
 
 
         /* SPARQL-Query

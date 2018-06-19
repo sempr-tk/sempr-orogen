@@ -119,7 +119,7 @@ bool SEMPREnvironment::addObjectAssertion(::sempr_rock::ObjectAssertion const & 
 }
 
 
-void SEMPREnvironment::addTriple(const ::sempr_rock::Triple &arg0)
+bool SEMPREnvironment::addTriple(const ::sempr_rock::Triple &arg0)
 {
     // get or create a global RDFEntity to store the triples in
     const std::string rdfID = "RDF_Triple_Assertions";
@@ -147,8 +147,9 @@ void SEMPREnvironment::addTriple(const ::sempr_rock::Triple &arg0)
     t.predicate = arg0.predicate_;
     t.object = arg0.object_;
 
-    rdf->addTriple(t);
+    bool valid = rdf->addTriple(t);
     rdf->changed();
+    return valid;
 }
 
 ::sempr_rock::SPARQLResult SEMPREnvironment::answerQuery(::std::string const & arg0)

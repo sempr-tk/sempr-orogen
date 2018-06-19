@@ -50,6 +50,7 @@ task_context "SEMPREnvironment" do
     # Adds a global assertion in form of an rdf triple.
     # TODO: This is a candidate for a port...
     operation('addTriple').
+        returns('/bool').
         argument('arg0', '/sempr_rock/Triple')
 
     # TODO: ClearAssertions?
