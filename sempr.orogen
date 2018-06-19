@@ -24,6 +24,8 @@ task_context "SEMPREnvironment" do
 
     property("rdf_file", "/std/string").
         doc("Path to the RDF file to initialize SEMPR with.")
+    property("rules_file", "/std/string").
+        doc("Path to the file with rules for the soprano module.")
 
     # input_port "input", "/std/string"
     # output_port "output", "int"

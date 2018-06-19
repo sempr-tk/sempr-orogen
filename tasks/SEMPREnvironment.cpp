@@ -230,7 +230,6 @@ bool SEMPREnvironment::configureHook()
 
 
     // also, load the rules
-    // but the ruleset is more or less fixed, and needs to be only loaded/created once.
     auto rulequery = std::make_shared<ObjectQuery<RuleSet>>();
     sempr_->answerQuery(rulequery);
 
@@ -240,11 +239,11 @@ bool SEMPREnvironment::configureHook()
         sempr_->removeEntity(rule);
     }
 
-    // and reload them from the file // TODO: property for filename?
+    // and reload them from the file
     RuleSet::Ptr rules(new RuleSet());
     sempr_->addEntity(rules);
 
-    std::ifstream rulefile("../resources/owl.rules");
+    std::ifstream rulefile(_rules_file.get());
     std::string line;
     while (std::getline(rulefile, line))
     {
