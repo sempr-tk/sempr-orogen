@@ -15,6 +15,8 @@ Orocos.run 'sempr::SEMPREnvironment' => 'sempr' do
 
     mars.detectionArray.connect_to sempr.detectionArray
 
+    sempr.rdf_file = "../resources/combined.owl"
+    sempr.rules_file = "../resources/owl.rules"
     sempr.configure
     sempr.start
 
