@@ -10,6 +10,8 @@ Orocos.run do
 
 
     while buf = Readline.readline("(subject predicate value)> ", true)
+        sempr = Orocos.name_service.get 'sempr'
+
         parts = buf.split
         triple = Types::sempr_rock::Triple.new
         triple.subject_ = parts[0]

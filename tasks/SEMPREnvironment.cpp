@@ -19,6 +19,7 @@
 #include <SpatialObject_odb.h>
 #include <RDFDocument_odb.h>
 #include <RuleSet_odb.h>
+#include <RDFEntity_odb.h>
 
 #include <sempr/core/IncrementalIDGeneration.hpp>
 #include <sempr/core/IDGenUtil.hpp>
@@ -152,11 +153,68 @@ bool SEMPREnvironment::addTriple(const ::sempr_rock::Triple &arg0)
     return valid;
 }
 
+
+bool SEMPREnvironment::removeTriple(::std::string const & entity, ::sempr_rock::Triple const & triple)
+{
+    // try to find the entity
+    auto query = std::make_shared<ObjectQuery<RDFEntity>>(
+        [&entity](RDFEntity::Ptr obj) {
+            return (obj->id() == entity) || ((sempr::baseURI() + obj->id()) == entity);
+        }
+    );
+    sempr_->answerQuery(query);
+
+    if (query->results.empty())
+    {
+        std::cout << "Cannot remove triple. Entity: " << entity << " not found." << std::endl;
+        return false; // entity not found
+    }
+
+    auto obj = query->results[0];
+
+    Triple t;
+    t.subject = triple.subject_;
+    t.predicate = triple.predicate_;
+    t.object = triple.object_;
+    t.document = sempr::baseURI() + obj->id();
+
+    bool actuallyRemovedSomething = obj->removeTriple(t);
+    if (actuallyRemovedSomething) obj->changed();
+    else
+    {
+        std::cout << "obj->removeTriple failed. Try to remove manually." << std::endl;
+        // why? I guess that triple.document as stored in soprano is different from triple.document in the rdfentity!
+        int index = -1;
+        int count = 0;
+        for (auto tmp : *obj) {
+            if (tmp.subject == t.subject &&
+                tmp.predicate == t.predicate &&
+                tmp.object == t.object)
+            {
+                // for now, ignore the document. we have the correct entity,
+                index = count;
+                break;
+            }
+            count++;
+        }
+
+        if (index == -1) {
+            std::cout << "... failed." << std::endl;
+            return false;
+        }
+
+        obj->removeTripleAt(index);
+        actuallyRemovedSomething = true;
+        obj->changed();
+    }
+
+    return actuallyRemovedSomething;
+}
+
+
+
 ::sempr_rock::SPARQLResult SEMPREnvironment::answerQuery(::std::string const & arg0)
 {
-    std::cout << "answerQuery:" << '\n';
-    std::cout << arg0 << '\n';
-
     auto query = std::make_shared<SPARQLQuery>();
     query->query = arg0;
     sempr_->answerQuery(query);
@@ -273,8 +331,6 @@ void SEMPREnvironment::updateHook()
     auto status = _detectionArray.read(detections);
     if (status != RTT::FlowStatus::NewData) return;
 
-    std::cout << "processing Detection3DArray" << std::endl;
-
     // compute matches
     std::vector<sempr::Detection> detectionPairs;
     for (auto d : detections.detections)
@@ -287,10 +343,10 @@ void SEMPREnvironment::updateHook()
 
     for (int i = 0; i < detections.detections.size(); i++)
     {
-        std::cout   << "detected: " << std::setw(21) << std::left
-                    << detections.detections[i].results[0].type
-                    << " --> "
-                    << (matches[i] ? matches[i]->id() : " nullptr ") << std::endl;
+        // std::cout   << "detected: " << std::setw(21) << std::left
+                    // << detections.detections[i].results[0].type
+                    // << " --> "
+                    // << (matches[i] ? matches[i]->id() : " nullptr ") << std::endl;
 
 
         SpatialObject::Ptr object;

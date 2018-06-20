@@ -57,6 +57,10 @@ task_context "SEMPREnvironment" do
 
     # TODO: ClearAssertions?
     # TODO: RemoveTriple?
+    operation('removeTriple').
+        returns('/bool').
+        argument('entity', '/std/string').
+        argument('triple', '/sempr_rock/Triple')
 
     # Returns the pose of an object given it's id in the environment representation.
     operation('getObjectPose').

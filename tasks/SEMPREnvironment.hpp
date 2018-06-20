@@ -59,6 +59,12 @@ namespace sempr {
          */
         virtual ::base::Pose getObjectPose(::std::string const & arg0) override;
 
+        /**
+            Try to remove a triple from the given RDFEntity. returns false if the entity
+            couldn't be found.
+        */
+        virtual bool removeTriple(::std::string const & entity, ::sempr_rock::Triple const & triple) override;
+
     public:
         /** TaskContext constructor for SEMPREnvironment
          * \param name Name of the task. This name needs to be unique to make it identifiable via nameservices.

@@ -9,6 +9,7 @@ Orocos.run do
 
 
     while buf = Readline.readline("> ", true)
+        sempr = Orocos.name_service.get 'sempr'
         for result in sempr.answerQuery(buf).results
             for pair in result.pairs
                 print pair.key, ":", pair.value, " "
