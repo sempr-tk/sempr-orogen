@@ -2,7 +2,8 @@
 
 include(semprTaskLib)
 ADD_LIBRARY(${SEMPR_TASKLIB_NAME} SHARED 
-    ${SEMPR_TASKLIB_SOURCES})
+    ${SEMPR_TASKLIB_SOURCES}
+    Anchoring.cpp)
 add_dependencies(${SEMPR_TASKLIB_NAME}
     regen-typekit)
 

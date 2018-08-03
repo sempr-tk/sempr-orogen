@@ -13,7 +13,7 @@
 #include <sempr/query/ObjectQuery.hpp>
 
 #include <sempr/entity/spatial/SpatialObject.hpp>
-#include <sempr/entity/spatial/LocalCS.hpp>
+#include <sempr/entity/spatial/reference/LocalCS.hpp>
 
 #include <LocalCS_odb.h>
 #include <SpatialObject_odb.h>
