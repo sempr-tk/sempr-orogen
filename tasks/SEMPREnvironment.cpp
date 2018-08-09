@@ -19,7 +19,7 @@
 #include <SpatialObject_odb.h>
 #include <RDFDocument_odb.h>
 #include <RuleSet_odb.h>
-#include <RDFEntity_odb.h>
+#include <RDFVector_odb.h>
 
 #include <sempr/core/IncrementalIDGeneration.hpp>
 #include <sempr/core/IDGenUtil.hpp>
@@ -122,21 +122,21 @@ bool SEMPREnvironment::addObjectAssertion(::sempr_rock::ObjectAssertion const & 
 
 bool SEMPREnvironment::addTriple(const ::sempr_rock::Triple &arg0)
 {
-    // get or create a global RDFEntity to store the triples in
+    // get or create a global RDFVector to store the triples in
     const std::string rdfID = "RDF_Triple_Assertions";
-    auto query = std::make_shared<ObjectQuery<RDFEntity>>(
-        [&rdfID](RDFEntity::Ptr e) {
+    auto query = std::make_shared<ObjectQuery<RDFVector>>(
+        [&rdfID](RDFVector::Ptr e) {
             return e->id() == rdfID;
         }
     );
 
     sempr_->answerQuery(query);
 
-    RDFEntity::Ptr rdf;
+    RDFVector::Ptr rdf;
     if (query->results.empty())
     {
         // create a new one
-        rdf.reset(new RDFEntity(new PredefinedID(rdfID)));
+        rdf.reset(new RDFVector(new PredefinedID(rdfID)));
         sempr_->addEntity(rdf);
     } else {
         rdf = query->results[0];
@@ -157,8 +157,8 @@ bool SEMPREnvironment::addTriple(const ::sempr_rock::Triple &arg0)
 bool SEMPREnvironment::removeTriple(::std::string const & entity, ::sempr_rock::Triple const & triple)
 {
     // try to find the entity
-    auto query = std::make_shared<ObjectQuery<RDFEntity>>(
-        [&entity](RDFEntity::Ptr obj) {
+    auto query = std::make_shared<ObjectQuery<RDFVector>>(
+        [&entity](RDFVector::Ptr obj) {
             return (obj->id() == entity) || ((sempr::baseURI() + obj->id()) == entity);
         }
     );
