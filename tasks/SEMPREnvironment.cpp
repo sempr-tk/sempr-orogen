@@ -8,6 +8,7 @@
 #include <sempr/processing/DBUpdateModule.hpp>
 #include <sempr/processing/DebugModule.hpp>
 #include <sempr/processing/ActiveObjectStore.hpp>
+#include <sempr-rete-reasoning/ReteReasonerModule.hpp>
 
 #include <sempr/query/SPARQLQuery.hpp>
 #include <sempr/query/ObjectQuery.hpp>
@@ -30,6 +31,7 @@
 #include <iomanip>
 #include <vector>
 #include <fstream>
+#include <sstream>
 
 using namespace sempr;
 using namespace sempr::core;
@@ -60,6 +62,8 @@ void SEMPREnvironment::initializeSEMPR()
     ActiveObjectStore::Ptr active( new ActiveObjectStore() );
     SopranoModule::Ptr semantic( new SopranoModule() );
 
+    ReteReasonerModule::Ptr rete( new ReteReasonerModule() );
+
     sempr::core::IDGenerator::getInstance().setStrategy(
         std::unique_ptr<sempr::core::IncrementalIDGeneration>(
             new sempr::core::IncrementalIDGeneration( storage )
@@ -71,6 +75,7 @@ void SEMPREnvironment::initializeSEMPR()
     sempr_->addModule(updater);
     sempr_->addModule(active);
     sempr_->addModule(semantic);
+    sempr_->addModule(rete);
 
     // load everything
     std::vector<Entity::Ptr> everything;
@@ -287,30 +292,41 @@ bool SEMPREnvironment::configureHook()
 
 
 
+    // old: rules for soprano
     // also, load the rules
-    auto rulequery = std::make_shared<ObjectQuery<RuleSet>>();
-    sempr_->answerQuery(rulequery);
+    // auto rulequery = std::make_shared<ObjectQuery<RuleSet>>();
+    // sempr_->answerQuery(rulequery);
+    //
+    // // make sure old rules are removed
+    // for (auto rule : rulequery->results)
+    // {
+    //     sempr_->removeEntity(rule);
+    // }
+    //
+    // // and reload them from the file
+    // RuleSet::Ptr rules(new RuleSet());
+    // sempr_->addEntity(rules);
+    //
+    // std::ifstream rulefile(_rules_file.get());
+    // std::string line;
+    // while (std::getline(rulefile, line))
+    // {
+    //     if (line.find("#") != 0) {
+    //         rules->add(line);
+    //         std::cout << "adding rule: " << line << std::endl;
+    //     }
+    // }
+    // rules->changed();
 
-    // make sure old rules are removed
-    for (auto rule : rulequery->results)
-    {
-        sempr_->removeEntity(rule);
-    }
-
-    // and reload them from the file
-    RuleSet::Ptr rules(new RuleSet());
-    sempr_->addEntity(rules);
-
+    // new: rules for rete reasoner
+    auto rete = sempr_->getModule<ReteReasonerModule>();
     std::ifstream rulefile(_rules_file.get());
-    std::string line;
-    while (std::getline(rulefile, line))
-    {
-        if (line.find("#") != 0) {
-            rules->add(line);
-            std::cout << "adding rule: " << line << std::endl;
-        }
-    }
-    rules->changed();
+    std::stringstream buffer;
+    buffer << rulefile.rdbuf();
+
+    rete->reset();
+    rete->addRules(buffer.str());
+    rete->rebuildKnowledge();
 
     return true;
 }
