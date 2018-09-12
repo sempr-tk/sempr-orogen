@@ -291,7 +291,6 @@ bool SEMPREnvironment::configureHook()
     }
 
 
-
     // old: rules for soprano
     // also, load the rules
     // auto rulequery = std::make_shared<ObjectQuery<RuleSet>>();
@@ -318,6 +317,7 @@ bool SEMPREnvironment::configureHook()
     // }
     // rules->changed();
 
+
     // new: rules for rete reasoner
     auto rete = sempr_->getModule<ReteReasonerModule>();
     std::ifstream rulefile(_rules_file.get());
@@ -326,7 +326,17 @@ bool SEMPREnvironment::configureHook()
 
     rete->reset();
     rete->addRules(buffer.str());
+
+    std::ofstream out1("rete_without_facts.dot");
+    out1 << rete->reasoner().net().toDot();
+
     rete->rebuildKnowledge();
+
+    // save network!
+    std::ofstream out2("rete_with_facts.dot");
+    out2 << rete->reasoner().net().toDot();
+
+
 
     return true;
 }
