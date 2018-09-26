@@ -17,4 +17,4 @@
 
 # subclasses!
 [subclassToType: (?x rdf:type ?t), (?t rdfs:subClassOf ?other) -> (?x rdf:type ?other)]
-# [subclassTransient: (?t1 rdfs:subClassOf ?t2), (?t2 rdfs:subClassOf ?t3) -> (?t1 rdfs:subClassOf ?t3)]
+[subclassTransient: (?t1 rdfs:subClassOf ?t2), (?t2 rdfs:subClassOf ?t3) -> (?t1 rdfs:subClassOf ?t3)]
