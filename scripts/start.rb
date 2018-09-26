@@ -7,7 +7,7 @@ Orocos.initialize
 Orocos.run 'sempr::SEMPREnvironment' => 'sempr' do
     sempr = Orocos.name_service.get 'sempr'
 
-    sempr.rdf_file = "../resources/model.owl"
+    sempr.rdf_file = "../resources/combined.owl"
     sempr.rules_file = "../resources/owl.rules"
     sempr.configure
     sempr.start
