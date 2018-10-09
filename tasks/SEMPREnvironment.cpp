@@ -229,7 +229,16 @@ bool SEMPREnvironment::removeTriple(::std::string const & entity, ::sempr_rock::
     for (auto result : query->results)
     {
         sempr_rock::KVMap kvmap;
-        kvmap.fromMap(result);
+        //kvmap.fromMap(result);
+        for (auto entry : result)
+        {
+            sempr_rock::KVPair pair;
+            pair.key = entry.first;
+            pair.value = entry.second.second;
+//            pair.type = entry.second.first; // not implemented in sempr-rock/ObjectMessages.hpp yet
+            kvmap.pairs.push_back(pair);
+        }
+        
         results.results.push_back(kvmap);
     }
 
