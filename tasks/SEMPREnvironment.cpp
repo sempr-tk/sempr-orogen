@@ -12,6 +12,7 @@
 
 #include <sempr/query/SPARQLQuery.hpp>
 #include <sempr/query/ObjectQuery.hpp>
+#include <sempr/query/SpatialIndexQuery.hpp>
 
 #include <sempr/entity/spatial/SpatialObject.hpp>
 #include <sempr/entity/spatial/reference/LocalCS.hpp>
@@ -238,7 +239,7 @@ bool SEMPREnvironment::removeTriple(::std::string const & entity, ::sempr_rock::
 //            pair.type = entry.second.first; // not implemented in sempr-rock/ObjectMessages.hpp yet
             kvmap.pairs.push_back(pair);
         }
-        
+
         results.results.push_back(kvmap);
     }
 
@@ -269,6 +270,92 @@ bool SEMPREnvironment::removeTriple(::std::string const & entity, ::sempr_rock::
 
     return pose;
 }
+
+
+::std::vector< ::std::string > SEMPREnvironment::getObjectsInCone(
+    ::base::Pose const & direction,
+    float length, float angle,
+    ::std::string const & type)
+{
+    std::vector<std::string> objects;
+
+    /**
+        1. compute bounding box of the cone
+        2. find all geometries inside the bbox (spatial index)
+        3. find all geometries inside the cone
+        4. find all spatial objects to the geometries
+    */
+
+    // compute a rough bounding box of the cone
+    // first estimation: bounding box of the center line
+    Eigen::Vector3d start, r, end;
+    start = direction.position;
+    r = direction.orientation * Eigen::Vector3d(1, 0, 0); // x axis of pose is direction vector
+    end = start + length * r;
+
+    double min[3], max[3];
+    min[0] = std::min(start[0], end[0]); max[0] = std::max(start[0], end[0]);
+    min[1] = std::min(start[1], end[1]); max[1] = std::max(start[1], end[1]);
+    min[2] = std::min(start[2], end[2]); max[2] = std::max(start[2], end[2]);
+
+    // add radius of the cone at its end to all dimensions
+    double radius_end = length * std::tan(angle * M_PI / 180.);
+    min[0] -= radius_end; max[0] += radius_end;
+    min[1] -= radius_end; max[1] += radius_end;
+    min[2] -= radius_end; max[2] += radius_end;
+
+
+    // get the root coordinate system, used to create the query
+    auto objQuery = std::make_shared<ObjectQuery<LocalCS>>();
+    sempr_->answerQuery(objQuery);
+
+    if (objQuery->results.empty()) return objects; // error: no local cs found
+    auto rootCS = objQuery->results[0]->getRoot();
+
+    // spatial index query to find object candidates
+    Eigen::Vector3d lower(min[0], min[1], min[2]), upper(max[0], max[1], max[2]);
+    SpatialIndexQuery::Ptr query = SpatialIndexQuery::intersectsBox(lower, upper, rootCS);
+    sempr_->answerQuery(query);
+
+    // for every candidate **geometry**, check if it is actually in the cone
+    Eigen::Vector3d p0, p1;
+    std::set<entity::Geometry::Ptr> geometryInCone;
+    for (auto geometry : query->results)
+    {
+        p0 = geometry->getCS()->transformationToRoot() * Eigen::Vector3d(0, 0, 0);
+        p1 = p0 - start;
+        double l = p1.dot(r) / r.norm();
+        // first check: is the point above the line segment?
+        if (0 <= l && l <= length)
+        {
+            // second check: is it inside the cone?
+            double dsq = p1.norm() - l*l;
+            double dmax = std::tan(angle * M_PI / 180.) * l;
+            if (dsq <= dmax*dmax)
+            {
+                // okay, center of coordinate system of the object is within the cone.
+                geometryInCone.insert(geometry);
+            }
+        }
+    }
+
+    // find the spatial objects that belong to the geometry
+    auto soQuery = std::make_shared<ObjectQuery<SpatialObject>>(
+        [&geometryInCone](SpatialObject::Ptr obj)
+        {
+            return geometryInCone.find(obj->geometry()) != geometryInCone.end();
+        }
+    );
+    sempr_->answerQuery(soQuery);
+    for (auto obj : soQuery->results)
+    {
+        objects.push_back(obj->id());
+    }
+
+    return objects;
+}
+
+
 
 /// The following lines are template definitions for the various state machine
 // hooks defined by Orocos::RTT. See SEMPREnvironment.hpp for more detailed
@@ -394,6 +481,7 @@ void SEMPREnvironment::updateHook()
 
         } else {
             updateSpatialObject(matches[i], detectionPairs[i]);
+            std::cout << "updated: " << matches[i]->id() << std::endl;
             object = matches[i];
         }
 

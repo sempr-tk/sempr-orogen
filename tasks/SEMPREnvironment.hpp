@@ -65,6 +65,11 @@ namespace sempr {
         */
         virtual bool removeTriple(::std::string const & entity, ::sempr_rock::Triple const & triple) override;
 
+        /**
+            Returns all objects of a given type in the specified cone
+         */
+        virtual ::std::vector< ::std::string > getObjectsInCone(::base::Pose const & direction, float length, float angle, ::std::string const & type) override;
+
     public:
         /** TaskContext constructor for SEMPREnvironment
          * \param name Name of the task. This name needs to be unique to make it identifiable via nameservices.

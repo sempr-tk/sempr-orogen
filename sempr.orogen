@@ -68,6 +68,14 @@ task_context "SEMPREnvironment" do
         returns('/base/Pose').
         argument('arg0', '/std/string')
 
+    # Returns all objects of a given type in the specified cone
+    operation('getObjectsInCone').
+        returns('/std/vector</std/string>').
+        argument('direction', '/base/Pose').
+        argument('length', 'float').
+        argument('angle', 'float').
+        argument('type', '/std/string')
+
     # If you want that component's updateHook() to be executed when the "input"
     # port gets data, uncomment this and comment the 'periodic' line
     # port_driven "input"
