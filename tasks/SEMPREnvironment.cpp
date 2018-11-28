@@ -9,6 +9,7 @@
 #include <sempr/processing/DebugModule.hpp>
 #include <sempr/processing/ActiveObjectStore.hpp>
 #include <sempr-rete-reasoning/ReteReasonerModule.hpp>
+#include <sempr/processing/SpatialIndex.hpp>
 
 #include <sempr/query/SPARQLQuery.hpp>
 #include <sempr/query/ObjectQuery.hpp>
@@ -33,6 +34,7 @@
 #include <vector>
 #include <fstream>
 #include <sstream>
+#include <cmath>
 
 using namespace sempr;
 using namespace sempr::core;
@@ -64,6 +66,7 @@ void SEMPREnvironment::initializeSEMPR()
     SopranoModule::Ptr semantic( new SopranoModule() );
 
     ReteReasonerModule::Ptr rete( new ReteReasonerModule() );
+    SpatialIndex::Ptr spatial(new SpatialIndex() );
 
     sempr::core::IDGenerator::getInstance().setStrategy(
         std::unique_ptr<sempr::core::IncrementalIDGeneration>(
@@ -77,6 +80,7 @@ void SEMPREnvironment::initializeSEMPR()
     sempr_->addModule(active);
     sempr_->addModule(semantic);
     sempr_->addModule(rete);
+    sempr_->addModule(spatial);
 
     // load everything
     std::vector<Entity::Ptr> everything;
@@ -293,10 +297,13 @@ bool SEMPREnvironment::removeTriple(::std::string const & entity, ::sempr_rock::
     r = direction.orientation * Eigen::Vector3d(1, 0, 0); // x axis of pose is direction vector
     end = start + length * r;
 
+    std::cout << "line: " << start.matrix().transpose() << " to " << end.matrix().transpose() << std::endl;
+
     double min[3], max[3];
     min[0] = std::min(start[0], end[0]); max[0] = std::max(start[0], end[0]);
     min[1] = std::min(start[1], end[1]); max[1] = std::max(start[1], end[1]);
     min[2] = std::min(start[2], end[2]); max[2] = std::max(start[2], end[2]);
+
 
     // add radius of the cone at its end to all dimensions
     double radius_end = length * std::tan(angle * M_PI / 180.);
@@ -304,6 +311,8 @@ bool SEMPREnvironment::removeTriple(::std::string const & entity, ::sempr_rock::
     min[1] -= radius_end; max[1] += radius_end;
     min[2] -= radius_end; max[2] += radius_end;
 
+    std::cout << "query min: (" << min[0] << " " << min[1] << " " << min[2] << ")" << std::endl;
+    std::cout << "query max: (" << max[0] << " " << max[1] << " " << max[2] << ")" << std::endl;
 
     // get the root coordinate system, used to create the query
     auto objQuery = std::make_shared<ObjectQuery<LocalCS>>();
@@ -312,25 +321,32 @@ bool SEMPREnvironment::removeTriple(::std::string const & entity, ::sempr_rock::
     if (objQuery->results.empty()) return objects; // error: no local cs found
     auto rootCS = objQuery->results[0]->getRoot();
 
+    std::cout << "Got root: " << rootCS->id() << std::endl;
+
     // spatial index query to find object candidates
     Eigen::Vector3d lower(min[0], min[1], min[2]), upper(max[0], max[1], max[2]);
     SpatialIndexQuery::Ptr query = SpatialIndexQuery::intersectsBox(lower, upper, rootCS);
     sempr_->answerQuery(query);
+
+    std::cout << "Number of candidates: " << query->results.size() << std::endl;
 
     // for every candidate **geometry**, check if it is actually in the cone
     Eigen::Vector3d p0, p1;
     std::set<entity::Geometry::Ptr> geometryInCone;
     for (auto geometry : query->results)
     {
+        std::cout << "Candidate Geometry: " << geometry->id() << std::endl;
         p0 = geometry->getCS()->transformationToRoot() * Eigen::Vector3d(0, 0, 0);
         p1 = p0 - start;
         double l = p1.dot(r) / r.norm();
+        std::cout << "l: " << l << " < " << length << "?" << std::endl;
         // first check: is the point above the line segment?
         if (0 <= l && l <= length)
         {
             // second check: is it inside the cone?
             double dsq = p1.norm() - l*l;
             double dmax = std::tan(angle * M_PI / 180.) * l;
+            std::cout << "distance: " << std::sqrt(dsq) << " < " << dmax << " ? " << std::endl;
             if (dsq <= dmax*dmax)
             {
                 // okay, center of coordinate system of the object is within the cone.
