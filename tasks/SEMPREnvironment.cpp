@@ -339,15 +339,18 @@ bool SEMPREnvironment::removeTriple(::std::string const & entity, ::sempr_rock::
         p0 = geometry->getCS()->transformationToRoot() * Eigen::Vector3d(0, 0, 0);
         p1 = p0 - start;
         double l = p1.dot(r) / r.norm();
-        std::cout << "l: " << l << " < " << length << "?" << std::endl;
+        std::cout << "l: 0 <= " << l << " <= " << length << "?" << std::endl;
         // first check: is the point above the line segment?
         if (0 <= l && l <= length)
         {
             // second check: is it inside the cone?
-            double dsq = p1.norm() - l*l;
+            std::cout << "p1.norm(): " << p1.norm() << std::endl;
+            double dsq = p1.dot(p1) - l*l;
+            double d = std::sqrt(dsq);
+            std::cout << "d: " << d << std::endl;
             double dmax = std::tan(angle * M_PI / 180.) * l;
-            std::cout << "distance: " << std::sqrt(dsq) << " < " << dmax << " ? " << std::endl;
-            if (dsq <= dmax*dmax)
+            std::cout << "distance: " << d << " < " << dmax << " ? " << std::endl;
+            if (d <= dmax)
             {
                 // okay, center of coordinate system of the object is within the cone.
                 geometryInCone.insert(geometry);
