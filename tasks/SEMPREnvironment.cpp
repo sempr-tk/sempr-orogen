@@ -366,9 +366,31 @@ bool SEMPREnvironment::removeTriple(::std::string const & entity, ::sempr_rock::
         }
     );
     sempr_->answerQuery(soQuery);
+
+    // get all objects of the type we search for
+    auto tQuery = std::make_shared<SPARQLQuery>();
+    tQuery->query = "SELECT * WHERE { ?obj rdf:type <" + type + "> . }";
+    sempr_->answerQuery(tQuery);
+
     for (auto obj : soQuery->results)
     {
-        objects.push_back(obj->id());
+        // check if the object is of the specified type!
+        bool found = false;
+        if (type.empty()) found = true;
+        else
+        {
+            for (auto typeResult : tQuery->results)
+            {
+                if (typeResult["obj"].second == sempr::baseURI() + obj->id())
+                {
+                    found = true;
+                    break;
+                }
+            }
+        }
+
+        if (found) objects.push_back(obj->id());
+        else std::cout << obj->id() << " is not of type " << type << ", but " << obj->type() << std::endl;
     }
 
     return objects;

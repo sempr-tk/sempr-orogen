@@ -16,7 +16,7 @@ if __FILE__ == $0
   Orocos.run do
     sempr = Orocos.name_service.get 'sempr'
 
-    list = sempr.getObjectsInCone(pose, length, angle, "")
+    list = sempr.getObjectsInCone(pose, length, angle, "http://trans.fit/Screwdriver-")
     p list
   end
 end
