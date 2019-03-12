@@ -16,6 +16,7 @@
   -->
   <depend package="sempr/sempr-rock" />
   <depend package="sempr/sempr-core" />
+  <depend package="sempr/sempr-anchoring" />
   <depend package="sempr/sempr-rete-reasoning" />
   <depend package="soprano" />
   <depend package="simulation/orogen/mars" />

@@ -8,6 +8,7 @@ name "sempr"
 using_library "sempr-core"
 using_library "sempr_rock"
 using_library "sempr-rete-reasoning"
+using_library "sempr-anchoring"
 import_types_from "sempr_rock/ObjectMessages.hpp"
 
 # If this project uses data types that are defined in other oroGen projects,
