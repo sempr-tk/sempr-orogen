@@ -6,6 +6,8 @@
 #include "sempr/SEMPREnvironmentBase.hpp"
 #include "mars/objectDetectionTypes.hpp"
 
+#include <sempr-anchoring/SimpleAnchoring.hpp>
+
 // forward declarations
 namespace sempr {
     namespace core {
@@ -27,6 +29,11 @@ namespace sempr {
             A SEMPR-instance.
         */
         sempr::core::Core* sempr_;
+
+        /**
+            Methods for object anchoring
+        */
+        anchoring::SimpleAnchoring* anchoring_;
 
         /**
             Initialize the sempr instance: Database, modules, ...
@@ -86,7 +93,7 @@ namespace sempr {
 
         /** Default deconstructor of SEMPREnvironment
         */
-        // ~SEMPREnvironment();
+        ~SEMPREnvironment();
 
         /** This hook is called by Orocos when the state machine transitions
          * from PreOperational to Stopped. If it returns false, then the

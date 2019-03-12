@@ -29,6 +29,15 @@ task_context "SEMPREnvironment" do
     property("rules_file", "/std/string").
         doc("Path to the file with rules for the soprano module.")
 
+    property("minScoreForPoseUpdate", "float").
+        doc("The minimum score of a detection message to actually update the pose. This is used to prevent pose updates of low quality, but prevent removal of the seen object.")
+    property("maxTimesUnseen", "int").
+        doc("An object is removed if the number of times it has not been recognized exceeds this threshold.")
+    property("maxDurationUnseen", "int").
+        doc("Seconds that an object must not have been seen before removal is allowed.")
+    property("requireFullyInViewToAdd", "bool").
+        doc("Set to only add new objects to the environment if they are fully in view.")
+
     # input_port "input", "/std/string"
     # output_port "output", "int"
 

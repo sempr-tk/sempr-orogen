@@ -27,6 +27,8 @@
 #include <sempr/core/IncrementalIDGeneration.hpp>
 #include <sempr/core/IDGenUtil.hpp>
 
+#include <sempr-anchoring/Detection3D.hpp>
+
 #include "Anchoring.hpp"
 
 #include <iostream>
@@ -35,6 +37,9 @@
 #include <fstream>
 #include <sstream>
 #include <cmath>
+
+#include <pcl/conversions.h>
+#include <pcl/point_representation.h>
 
 using namespace sempr;
 using namespace sempr::core;
@@ -63,9 +68,9 @@ void SEMPREnvironment::initializeSEMPR()
     DebugModule::Ptr debug( new DebugModule() );
     DBUpdateModule::Ptr updater( new DBUpdateModule(storage) );
     ActiveObjectStore::Ptr active( new ActiveObjectStore() );
-    SopranoModule::Ptr semantic( new SopranoModule() );
+    SopranoModule::Ptr semantic( new SopranoModule(false) );
 
-    ReteReasonerModule::Ptr rete( new ReteReasonerModule() );
+    ReteReasonerModule::Ptr rete( new ReteReasonerModule(1000000) );
     SpatialIndex::Ptr spatial(new SpatialIndex() );
 
     sempr::core::IDGenerator::getInstance().setStrategy(
@@ -90,15 +95,22 @@ void SEMPREnvironment::initializeSEMPR()
         e->loaded();
     }
 
+    anchoring_ = new anchoring::SimpleAnchoring(sempr_);
+    anchoring_->setVisualSim(new anchoring::VisualSim(sempr_, ""));
+    anchoring_->setLogger(std::make_shared<anchoring::LoggerOStream>(&std::cout));
+
     // loading the RDFDocument is considered a real configuration, so it is done in the
     // configureHook.
 }
 
 
-// SEMPREnvironment::~SEMPREnvironment()
-// {
-//
-// }
+SEMPREnvironment::~SEMPREnvironment()
+{
+    delete anchoring_;
+    delete sempr_;
+}
+
+
 
 bool SEMPREnvironment::addObjectAssertion(::sempr_rock::ObjectAssertion const & arg0)
 {
@@ -427,6 +439,11 @@ bool SEMPREnvironment::configureHook()
         sempr_->addEntity(doc);
     }
 
+    anchoring_->minScoreForPoseUpdate(this->_minScoreForPoseUpdate.get());
+    anchoring_->maxTimesUnseen(this->_maxTimesUnseen.get());
+    anchoring_->maxDurationUnseen(this->_maxDurationUnseen.get());
+    anchoring_->requireFullyInViewToAdd(this->_requireFullyInViewToAdd.get());
+
 
     // old: rules for soprano
     // also, load the rules
@@ -494,43 +511,55 @@ void SEMPREnvironment::updateHook()
     auto status = _detectionArray.read(detections);
     if (status != RTT::FlowStatus::NewData) return;
 
-    // compute matches
-    std::vector<sempr::Detection> detectionPairs;
-    for (auto d : detections.detections)
-    {
-        detectionPairs.push_back(Detection("http://trans.fit/" + d.results[0].type, d.results[0].pose.pose));
-    }
+    // TODO: Update camera pose (relative to map)
+    // anchoring_->getVisualSim()->setCameraPose(eigenaffine3d)
+    anchoring::Detection3DArray darr;
+    mars2sempr(detections, darr);
 
-    std::vector<entity::SpatialObject::Ptr> matches;
-    sempr::getMatchingObjects(sempr_, detectionPairs, matches);
+    pcl::PointCloud<pcl::PointXYZ> cloud;
+    cloud.push_back(pcl::PointXYZ(0, 0, 0));
+    pcl::PCLPointCloud2::Ptr cloudmsg(new pcl::PCLPointCloud2());
+    pcl::toPCLPointCloud2(cloud, *cloudmsg);
 
-    for (int i = 0; i < detections.detections.size(); i++)
-    {
-        // std::cout   << "detected: " << std::setw(21) << std::left
-                    // << detections.detections[i].results[0].type
-                    // << " --> "
-                    // << (matches[i] ? matches[i]->id() : " nullptr ") << std::endl;
+    anchoring_->anchoring(darr, cloudmsg);
 
-
-        SpatialObject::Ptr object;
-        if (!matches[i])
-        {
-            auto obj = createSpatialObject(sempr_);
-            updateSpatialObject(obj, detectionPairs[i]);
-            std::cout << "created: " << obj->id() << '\n';
-            object = obj;
-
-        } else {
-            updateSpatialObject(matches[i], detectionPairs[i]);
-            std::cout << "updated: " << matches[i]->id() << std::endl;
-            object = matches[i];
-        }
-
-        // when using the fake object detection we also get the id of the object
-        (*object->properties())("simulationID", "http://trans.fit/") = (int) detections.detections[i].results[0].id;
-        object->properties()->changed();
-
-    }
+    // // compute matches
+    // std::vector<sempr::Detection> detectionPairs;
+    // for (auto d : detections.detections)
+    // {
+    //     detectionPairs.push_back(Detection("http://trans.fit/" + d.results[0].type, d.results[0].pose.pose));
+    // }
+    //
+    // std::vector<entity::SpatialObject::Ptr> matches;
+    // sempr::getMatchingObjects(sempr_, detectionPairs, matches);
+    //
+    // for (int i = 0; i < detections.detections.size(); i++)
+    // {
+    //     // std::cout   << "detected: " << std::setw(21) << std::left
+    //                 // << detections.detections[i].results[0].type
+    //                 // << " --> "
+    //                 // << (matches[i] ? matches[i]->id() : " nullptr ") << std::endl;
+    //
+    //
+    //     SpatialObject::Ptr object;
+    //     if (!matches[i])
+    //     {
+    //         auto obj = createSpatialObject(sempr_);
+    //         updateSpatialObject(obj, detectionPairs[i]);
+    //         std::cout << "created: " << obj->id() << '\n';
+    //         object = obj;
+    //
+    //     } else {
+    //         updateSpatialObject(matches[i], detectionPairs[i]);
+    //         std::cout << "updated: " << matches[i]->id() << std::endl;
+    //         object = matches[i];
+    //     }
+    //
+    //     // when using the fake object detection we also get the id of the object
+    //     (*object->properties())("simulationID", "http://trans.fit/") = (int) detections.detections[i].results[0].id;
+    //     object->properties()->changed();
+    //
+    // }
 
 }
 

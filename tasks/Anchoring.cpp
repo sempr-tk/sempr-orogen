@@ -1,4 +1,6 @@
 #include "Anchoring.hpp"
+#include <pcl/conversions.h>
+#include <pcl/point_representation.h>
 
 namespace sempr {
 
@@ -123,5 +125,58 @@ void updateSpatialObject(entity::SpatialObject::Ptr obj, Detection const & detec
     obj->changed();
 }
 
+
+void mars2sempr(const mars::BoundingBox3D& in, anchoring::BoundingBox3D& out)
+{
+    out.center = in.center.toTransform();
+    out.size = in.size;
+}
+
+void mars2sempr(const mars::Detection3D& in, anchoring::Detection3D& out)
+{
+    mars2sempr(in.bbox, out.bbox);
+    out.results.resize(1);
+    mars2sempr(in.results[0], out.results[0]);
+    pcl::PointCloud<pcl::PointXYZRGB> cloud;
+
+    bool use_color = in.source_cloud.colors.size() == in.source_cloud.points.size();
+    auto& ic = in.source_cloud;
+    for (size_t i = 0; i < in.source_cloud.points.size(); i++)
+    {
+        pcl::PointXYZRGB p;
+        p.x = ic.points[i].x();
+        p.y = ic.points[i].y();
+        p.z = ic.points[i].z();
+        if (use_color)
+        {
+            p.a = ic.colors[i][0];
+            p.r = ic.colors[i][1];
+            p.g = ic.colors[i][2];
+            p.b = ic.colors[i][3];
+        }
+        cloud.push_back(p);
+    }
+
+    pcl::toPCLPointCloud2(cloud, out.source_cloud);
+}
+
+void mars2sempr(const mars::Detection3DArray& in, anchoring::Detection3DArray& out)
+{
+    out.resize(in.detections.size());
+    for (size_t i = 0; i < in.detections.size(); i++)
+    {
+        mars2sempr(in.detections[i], out[i]);
+    }
+}
+
+void mars2sempr(const mars::ObjectHypothesisWithPose& in, anchoring::ObjectHypothesis& out)
+{
+    out.id = in.id;
+    out.pose = in.pose.pose.toTransform();
+    out.score = in.score;
+    out.id_str = in.type;
+
+    // TODO: map numeric id to string (or vice versa)?
+}
 
 } // ns sempr

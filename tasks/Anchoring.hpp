@@ -16,6 +16,12 @@
 
 #include <set>
 
+#include <sempr-anchoring/BoundingBox3D.hpp>
+#include <sempr-anchoring/Detection3D.hpp>
+#include <sempr-anchoring/ObjectHypothesis.hpp>
+
+#include "mars/objectDetectionTypes.hpp"
+
 namespace sempr {
 
 
@@ -53,6 +59,14 @@ entity::SpatialObject::Ptr createSpatialObject(sempr::core::Core* sempr);
 */
 void updateSpatialObject(entity::SpatialObject::Ptr obj, Detection const & detectionPair);
 
+
+/**
+    Conversion functions mars <-> sempr-anchoring
+*/
+void mars2sempr(const mars::BoundingBox3D& in, anchoring::BoundingBox3D& out);
+void mars2sempr(const mars::Detection3D& in, anchoring::Detection3D& out);
+void mars2sempr(const mars::Detection3DArray& in, anchoring::Detection3DArray& out);
+void mars2sempr(const mars::ObjectHypothesisWithPose& in, anchoring::ObjectHypothesis& out);
 
 } /* sempr */
 
