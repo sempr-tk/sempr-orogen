@@ -104,6 +104,32 @@ void SEMPREnvironment::initializeSEMPR()
 }
 
 
+void SEMPREnvironment::publishUpdateFor(sempr::entity::SpatialObject::Ptr object)
+{
+    sempr_rock::SpatialObject msg;
+    msg.id = object->id();
+    auto tf = object->geometry()->getCS()->transformationToRoot();
+    msg.position = tf.translation();
+    msg.orientation = tf.rotation();
+    msg.type = object->type();
+    if (msg.type.empty()) msg.type = "unknown";
+
+    this->_objectUpdates.write(msg);
+}
+
+void SEMPREnvironment::republish()
+{
+    auto objects = std::make_shared<sempr::query::ObjectQuery<sempr::entity::SpatialObject>>();
+    sempr_->answerQuery(objects);
+
+    for (auto obj : objects->results)
+    {
+        publishUpdateFor(obj);
+    }
+}
+
+
+
 SEMPREnvironment::~SEMPREnvironment()
 {
     delete anchoring_;
@@ -521,7 +547,11 @@ void SEMPREnvironment::updateHook()
     pcl::PCLPointCloud2::Ptr cloudmsg(new pcl::PCLPointCloud2());
     pcl::toPCLPointCloud2(cloud, *cloudmsg);
 
-    anchoring_->anchoring(darr, cloudmsg);
+    auto updatedObjects = anchoring_->anchoring(darr, cloudmsg);
+    for (auto obj : updatedObjects)
+    {
+        publishUpdateFor(obj);
+    }
 
     // // compute matches
     // std::vector<sempr::Detection> detectionPairs;

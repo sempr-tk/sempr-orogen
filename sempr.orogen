@@ -9,7 +9,8 @@ using_library "sempr-core"
 using_library "sempr_rock"
 using_library "sempr-rete-reasoning"
 using_library "sempr-anchoring"
-import_types_from "sempr_rock/ObjectMessages.hpp"
+import_types_from "sempr_types"
+#import_types_from "sempr_rock/ObjectMessages.hpp"
 
 # If this project uses data types that are defined in other oroGen projects,
 # these projects should be imported there as well.
@@ -43,6 +44,12 @@ task_context "SEMPREnvironment" do
 
     # input from object detection
     input_port "detectionArray", "/mars/Detection3DArray"
+
+    # output objects for visualization purposes
+    output_port "objectUpdates", "/sempr_rock/SpatialObject"
+
+    # Trigger a republish of all known objects on the objectUpdates port
+    operation('republish')
 
     # SPARQL-Query
     # argument must be a valid SPARQL query (e.g.: SELECT ?a WHERE {?a rdf:type sempr:CoffeeMug.}).

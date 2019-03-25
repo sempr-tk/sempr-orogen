@@ -40,6 +40,12 @@ namespace sempr {
         */
         void initializeSEMPR();
 
+
+        /**
+            Publish a (visualization) update for an object
+        */
+        void publishUpdateFor(sempr::entity::SpatialObject::Ptr object);
+
         /* Add an assertion to an object.
         Adds an rdf triple that is bound to the given object (will be removed together with the
         object)
@@ -71,6 +77,11 @@ namespace sempr {
             couldn't be found.
         */
         virtual bool removeTriple(::std::string const & entity, ::sempr_rock::Triple const & triple) override;
+
+        /**
+            Publish a message for every SpatialObject on the objectUpdates port
+        */
+        void republish() override;
 
         /**
             Returns all objects of a given type in the specified cone
