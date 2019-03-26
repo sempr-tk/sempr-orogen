@@ -5,6 +5,8 @@
 
 #include "sempr/SEMPREnvironmentBase.hpp"
 #include "mars/objectDetectionTypes.hpp"
+#include "sempr_rock/ObjectMessages.hpp"
+#include <vector>
 
 #include <sempr-anchoring/SimpleAnchoring.hpp>
 
@@ -23,6 +25,10 @@ namespace sempr {
     class SEMPREnvironment : public SEMPREnvironmentBase
     {
 	friend class SEMPREnvironmentBase;
+
+    // a list of modifications made since the last time publishing on the batch update port
+    std::vector<sempr_rock::SpatialObject> pendingVizUpdates_;
+
     protected:
 
         /**

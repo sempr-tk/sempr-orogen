@@ -8,6 +8,7 @@
 #include <sempr/processing/DBUpdateModule.hpp>
 #include <sempr/processing/DebugModule.hpp>
 #include <sempr/processing/ActiveObjectStore.hpp>
+#include <sempr/processing/CallbackModule.hpp>
 #include <sempr-rete-reasoning/ReteReasonerModule.hpp>
 #include <sempr/processing/SpatialIndex.hpp>
 
@@ -73,6 +74,32 @@ void SEMPREnvironment::initializeSEMPR()
     ReteReasonerModule::Ptr rete( new ReteReasonerModule(1000000) );
     SpatialIndex::Ptr spatial(new SpatialIndex() );
 
+    // create a sempr_rock::SpatialObject message everytime something
+    // changes
+    auto collectObjectUpdates = processing::CreateCallbackModule(
+        [this](core::EntityEvent<entity::SpatialObject>::Ptr event)
+        {
+            std::cout << "This is the callback speaking! We got a changed SpatialObject!" << std::endl;
+
+            typedef core::EntityEvent<entity::SpatialObject> event_t;
+            sempr_rock::SpatialObject msg;
+            msg.id = event->getEntity()->id();
+            auto tf = event->getEntity()->geometry()->getCS()->transformationToRoot();
+            msg.position = tf.translation();
+            msg.orientation = tf.rotation();
+            msg.type = event->getEntity()->type();
+            msg.mod = (event->what() == event_t::REMOVED ? 
+                       sempr_rock::Modification::REMOVE : sempr_rock::Modification::ADD);
+
+            // remember to publish this some time as a bulk message...
+            this->pendingVizUpdates_.push_back(msg);
+
+            // also, publish this now, directly, single message.
+            this->_objectUpdates.write(msg);
+        }
+    );
+
+
     sempr::core::IDGenerator::getInstance().setStrategy(
         std::unique_ptr<sempr::core::IncrementalIDGeneration>(
             new sempr::core::IncrementalIDGeneration( storage )
@@ -86,6 +113,7 @@ void SEMPREnvironment::initializeSEMPR()
     sempr_->addModule(semantic);
     sempr_->addModule(rete);
     sempr_->addModule(spatial);
+    sempr_->addModule(collectObjectUpdates);
 
     // load everything
     std::vector<Entity::Ptr> everything;
@@ -126,6 +154,21 @@ void SEMPREnvironment::republish()
     {
         publishUpdateFor(obj);
     }
+
+    // also, as batch. workaround for connection problems (unbuffered data connection...)
+    std::vector<sempr_rock::SpatialObject> batch;
+    batch.resize(objects->results.size());
+    for (size_t i = 0; i < objects->results.size(); i++)
+    {
+        auto& obj = objects->results[i];
+        batch[i].id = obj->id();
+        auto tf = obj->geometry()->getCS()->transformationToRoot();
+        batch[i].position = tf.translation();
+        batch[i].orientation = tf.rotation();
+        batch[i].type = obj->type();
+    }
+
+    _objectUpdatesBatch.write(batch);
 }
 
 
@@ -548,10 +591,19 @@ void SEMPREnvironment::updateHook()
     pcl::toPCLPointCloud2(cloud, *cloudmsg);
 
     auto updatedObjects = anchoring_->anchoring(darr, cloudmsg);
+
+    /*
     for (auto obj : updatedObjects)
     {
         publishUpdateFor(obj);
     }
+    */
+
+    // after every processing of a detection array, the changes on
+    // spatial objects are represented in pendingVizUpdates_.
+    // (see the CallbackModule added to sempr)
+    _objectUpdatesBatch.write(pendingVizUpdates_);
+    pendingVizUpdates_.clear();
 
     // // compute matches
     // std::vector<sempr::Detection> detectionPairs;
