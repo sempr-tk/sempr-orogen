@@ -9,6 +9,34 @@
  */
 
 namespace sempr {
+
+/**
+ * Configuration object for the object anchoring.
+ */
+struct AnchoringConfig {
+    /** The minimum score of a detection to use its pose estimate 
+        to update the object (or create a new one). If the score is
+        too low, no object will be created or updated, but existing
+        objects won't be deleted either as they are considered to be
+        observed, just not good enough. */
+    float minScoreForPoseUpdate = 1.f;
+
+    /** How many consecutive times an object must be missing in the
+        detection arrays to remove it */
+    int maxTimesUnseen = 5;
+
+    /** Number of seconds that an object must not have been seen
+        before removal is allowed. */
+    int maxDurationUnseen = 5;
+
+    /** Whether an object (pointcloud data) must be fully in view of
+        the (simulated) camera frustum to allow adding it to the
+        environment representation */
+    bool requireFullyInViewToAdd = false;
+    
+    // TODO camera settings.
+};
+
 }
 
 #endif

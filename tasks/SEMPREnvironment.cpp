@@ -134,6 +134,7 @@ void SEMPREnvironment::initializeSEMPR()
 
 void SEMPREnvironment::publishUpdateFor(sempr::entity::SpatialObject::Ptr object)
 {
+    std::cout << "publish update for " << object->id() << std::endl;
     sempr_rock::SpatialObject msg;
     msg.id = object->id();
     auto tf = object->geometry()->getCS()->transformationToRoot();
@@ -508,10 +509,11 @@ bool SEMPREnvironment::configureHook()
         sempr_->addEntity(doc);
     }
 
-    anchoring_->minScoreForPoseUpdate(this->_minScoreForPoseUpdate.get());
-    anchoring_->maxTimesUnseen(this->_maxTimesUnseen.get());
-    anchoring_->maxDurationUnseen(this->_maxDurationUnseen.get());
-    anchoring_->requireFullyInViewToAdd(this->_requireFullyInViewToAdd.get());
+    auto conf = _anchoring_config.get();
+    anchoring_->minScoreForPoseUpdate(conf.minScoreForPoseUpdate);
+    anchoring_->maxTimesUnseen(conf.maxTimesUnseen);
+    anchoring_->maxDurationUnseen(conf.maxDurationUnseen);
+    anchoring_->requireFullyInViewToAdd(conf.requireFullyInViewToAdd);
 
 
     // old: rules for soprano
