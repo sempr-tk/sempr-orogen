@@ -1,6 +1,7 @@
 #include "Anchoring.hpp"
 #include <pcl/conversions.h>
 #include <pcl/point_representation.h>
+#include <algorithm>
 
 namespace sempr {
 
@@ -175,6 +176,19 @@ void mars2sempr(const mars::ObjectHypothesisWithPose& in, anchoring::ObjectHypot
     out.pose = in.pose.pose.toTransform();
     out.score = in.score;
     out.id_str = in.type;
+
+    // if the detections are from the fake object recognition there is no prefix. In that case,
+    // add one.
+    const std::string http("http://");
+    if (out.id_str.size() > http.size())
+    {
+        auto res = std::mismatch(http.begin(), http.end(), out.id_str.begin());
+        if (res.first != http.end())
+        {
+            // no http:// prefix. so add http://trans.fit/ for now
+            out.id_str = "http://trans.fit/" + out.id_str;
+        }
+    }
 
     // TODO: map numeric id to string (or vice versa)?
 }
