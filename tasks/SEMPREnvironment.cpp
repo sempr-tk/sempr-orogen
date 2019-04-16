@@ -333,6 +333,18 @@ bool SEMPREnvironment::removeTriple(::std::string const & entity, ::sempr_rock::
 }
 
 
+std::string SEMPREnvironment::explainTriple(const sempr_rock::Triple& triple, int32_t maxDepth, bool vertical)
+{
+    auto mod = sempr_->getModule<ReteReasonerModule>();
+    sempr::entity::Triple t;
+    t.subject = triple.subject_;
+    t.predicate = triple.predicate_;
+    t.object = triple.object_;
+
+    return mod->explain(t, maxDepth, vertical);
+}
+
+
 std::vector<sempr_rock::Triple> SEMPREnvironment::listTriples(const std::string& subject, 
                                                               const std::string& predicate, 
                                                               const std::string& object)

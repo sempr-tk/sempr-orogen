@@ -70,6 +70,19 @@ task_context "SEMPREnvironment" do
         argument('predicate', '/std/string').
         argument('object', '/std/string')
 
+    # Returns a dot string with the explanation for the given triple.
+    # maxDepth limits the depth of the explanation, e.g.
+    #   maxDepth = 1 only lists rules that were used to get the triple,
+    #   maxDepth = 2 also shows the triples needed for those rules,
+    #   maxDepth = 3 shows the rules those triples originated from,
+    #   etc.
+    # vertical sets changes to a vertical graph layout
+    operation('explainTriple').
+        returns('/std/string').
+        argument('triple', '/sempr_rock/Triple').
+        argument('maxDepth', 'int').
+        argument('vertical', 'bool')
+
     # Add an assertion to an object.
     # Adds an rdf triple that is bound to the given object (will be removed together with the
     # object)

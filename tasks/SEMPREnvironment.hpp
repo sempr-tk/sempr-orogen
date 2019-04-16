@@ -73,6 +73,16 @@ namespace sempr {
          */
         virtual ::sempr_rock::SPARQLResult answerQuery(::std::string const & arg0) override;
 
+        /*  Returns a dot string with the explanation for the given triple.
+            maxDepth limits the depth of the explanation, e.g.
+              maxDepth = 1 only lists rules that were used to get the triple,
+              maxDepth = 2 also shows the triples needed for those rules,
+              maxDepth = 3 shows the rules those triples originated from,
+              etc.
+            vertical sets changes to a vertical graph layout
+         */
+        virtual ::std::string explainTriple(::sempr_rock::Triple const & triple, boost::int32_t maxDepth, bool vertical) override;
+
 
         /* Returns the pose of an object given it's id in the environment representation.
          */
