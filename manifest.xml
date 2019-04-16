@@ -20,4 +20,5 @@
   <depend package="sempr/sempr-rete-reasoning" />
   <depend package="soprano" />
   <depend package="simulation/orogen/mars" />
+  <depend package="ruby-graphviz" />
 </package>
