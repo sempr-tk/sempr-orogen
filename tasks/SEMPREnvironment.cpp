@@ -333,6 +333,34 @@ bool SEMPREnvironment::removeTriple(::std::string const & entity, ::sempr_rock::
 }
 
 
+std::vector<sempr_rock::Triple> SEMPREnvironment::listTriples(const std::string& subject, 
+                                                              const std::string& predicate, 
+                                                              const std::string& object)
+{
+    std::vector<sempr_rock::Triple> results;
+
+    // need an object query that uses dynamic casts, because RDFEntity is just an interface
+    auto rdfQuery = std::make_shared<sempr::query::ObjectQuery<sempr::entity::RDFEntity>>(nullptr, true);
+    sempr_->answerQuery(rdfQuery);
+
+    for (auto entity : rdfQuery->results)
+    {
+        for (auto triple : *entity)
+        {
+            if ((subject == "*" || subject == triple.subject) &&
+                (predicate == "*" || predicate == triple.predicate) &&
+                (object == "*"  || object == triple.object))
+            {
+                results.push_back({triple.subject, triple.predicate, triple.object});
+            }
+        }
+    }
+
+    return results;
+}
+
+
+
 ::base::Pose SEMPREnvironment::getObjectPose(::std::string const & arg0)
 {
     // get the object

@@ -94,6 +94,21 @@ namespace sempr {
          */
         virtual ::std::vector< ::std::string > getObjectsInCone(::base::Pose const & direction, float length, float angle, ::std::string const & type) override;
 
+        /* Simplified query, returns whole triples with a given pattern.
+           In contrast to "answerQuery" (sparql), this returns the full string representation of
+           the triple-parts. So a URI resource will include pointy brackets, like "<http://.../foo#bar>",
+           etc. Just as the triples are stored internally.
+           For every part of the triple you can either fully specify its content (including brackets etc),
+           or use "*" as a wildcard. (Don't mix it! Either "*" or "<fully-specified-thing>",
+           but **not** "<http://something/Fo*>"
+
+           This is a relatively expensive operation as it traverses *all* triples without utilizing an index.
+           May contain duplicates.
+         */
+        virtual ::std::vector< ::sempr_rock::Triple > listTriples(::std::string const & subject, ::std::string const & predicate, ::std::string const & object) override;
+
+
+
     public:
         /** TaskContext constructor for SEMPREnvironment
          * \param name Name of the task. This name needs to be unique to make it identifiable via nameservices.

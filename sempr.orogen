@@ -57,6 +57,19 @@ task_context "SEMPREnvironment" do
         returns('/sempr_rock/SPARQLResult').
         argument('arg0', '/std/string')
 
+    # Simplified query, returns whole triples with a given pattern.
+    # In contrast to "answerQuery" (sparql), this returns the full string representation of
+    # the triple-parts. So a URI resource will include pointy brackets, like "<http://.../foo#bar>",
+    # etc. Just as the triples are stored internally.
+    # For every part of the triple you can either fully specify its content (including brackets etc),
+    # or use "*" as a wildcard. (Don't mix it! Either "*" or "<fully-specified-thing>",
+    # but **not** "<http://something/Fo*>"
+    operation('listTriples').
+        returns('/std/vector</sempr_rock/Triple>').
+        argument('subject', '/std/string').
+        argument('predicate', '/std/string').
+        argument('object', '/std/string')
+
     # Add an assertion to an object.
     # Adds an rdf triple that is bound to the given object (will be removed together with the
     # object)
