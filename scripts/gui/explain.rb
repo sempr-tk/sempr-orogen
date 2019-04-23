@@ -14,6 +14,7 @@ class SEMPRExplain < Qt::Object
   slots 'toggleLayout()'
   slots 'changeDepth()'
   slots 'changeZoom(double)'
+  slots 'search(QString)'
 
   def initialize(parent = nil)
     super(parent)
@@ -36,6 +37,7 @@ class SEMPRExplain < Qt::Object
     connect(@window.radioButton_2, SIGNAL('clicked(bool)'), self, SLOT('toggleLayout()'))
     connect(@window.spinBoxExplainLimit, SIGNAL('valueChanged(int)'), self, SLOT('changeDepth()'))
     connect(@window.doubleSpinBoxZoom, SIGNAL('valueChanged(double)'), self, SLOT('changeZoom(double)'))
+    connect(@window.lineEdit, SIGNAL('textChanged(const QString&)'), self, SLOT('search(QString)'))
 
     # a filename for the temporary svg to render
     @imageName = Dir::Tmpname.create(['explainTriple_', '.svg']){}
@@ -64,6 +66,26 @@ class SEMPRExplain < Qt::Object
       entry.setText(1, triple.predicate_)
       entry.setText(2, triple.object_)
       @window.tripleList.addTopLevelItem entry
+    end
+  end
+
+  def search(str)
+    for i in 0..@window.tripleList.topLevelItemCount()-1
+      item = @window.tripleList.topLevelItem(i)
+      comp = item.text(0) + " " + item.text(1) + " " + item.text(2)
+      
+      match = true
+      begin
+        match = comp[/#{str}/] # interpret given string as regex
+      rescue
+      end
+
+      if match
+        #puts "#{str} matches #{comp}"
+        item.setHidden(false)
+      else
+        item.setHidden(true)
+      end
     end
   end
 
