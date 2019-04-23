@@ -11,12 +11,16 @@ Orocos.initialize
 class SEMPRExplain < Qt::Object
 
   slots 'explainTriple(QTreeWidgetItem*, int)'
+  slots 'toggleLayout()'
+  slots 'changeDepth()'
+  slots 'changeZoom(double)'
 
   def initialize(parent = nil)
     super(parent)
     @queryResults = []
     @window = Vizkit.load("explain.ui")
     @sempr = nil
+    @lastExplainedTriple = nil
 
     # add a svg widget to display explanations
     @svgWidget = Qt::SvgWidget.new
@@ -28,6 +32,10 @@ class SEMPRExplain < Qt::Object
 
     # connect stuff
     connect(@window.tripleList, SIGNAL('itemDoubleClicked(QTreeWidgetItem*, int)'), self, SLOT('explainTriple(QTreeWidgetItem*, int)'))
+    connect(@window.radioButton, SIGNAL('clicked(bool)'), self, SLOT('toggleLayout()'))
+    connect(@window.radioButton_2, SIGNAL('clicked(bool)'), self, SLOT('toggleLayout()'))
+    connect(@window.spinBoxExplainLimit, SIGNAL('valueChanged(int)'), self, SLOT('changeDepth()'))
+    connect(@window.doubleSpinBoxZoom, SIGNAL('valueChanged(double)'), self, SLOT('changeZoom(double)'))
 
     # a filename for the temporary svg to render
     @imageName = Dir::Tmpname.create(['explainTriple_', '.svg']){}
@@ -40,6 +48,7 @@ class SEMPRExplain < Qt::Object
   def reconnectSEMPR
     @sempr = Orocos.name_service.get 'sempr'
   end
+
 
   def updateTriples()
     results = @sempr.listTriples("*", "*", "*")
@@ -64,17 +73,50 @@ class SEMPRExplain < Qt::Object
     t.predicate_ = tripleItem.text(1)
     t.object_ = tripleItem.text(2)
 
-    explanation = @sempr.explainTriple(t, 2, false)
+    @lastExplainedTriple = t
+    self.updateLastExplanation
 
-    puts "#{@imageName}"
-    svg = GraphViz.parse_string(explanation){}.output(:svg => String)
-    @svgWidget.load(Qt::ByteArray.new svg)
-    defSize = @svgWidget.renderer().defaultSize()
-    @svgWidget.setFixedWidth(defSize.width()*1.5)
-    @svgWidget.setFixedHeight(defSize.height()*1.5)
+    @window.tabWidget.setCurrentIndex(1)
+  end
+  
 
+  def toggleLayout
+    self.updateLastExplanation
   end
 
+  def changeDepth
+    self.updateLastExplanation
+  end
+
+  def changeZoom(zoom)
+    defSize = @svgWidget.renderer().defaultSize()
+    @svgWidget.setFixedWidth(defSize.width()*zoom)
+    @svgWidget.setFixedHeight(defSize.height()*zoom)
+  end
+  
+  def updateLastExplanation
+    if not @lastExplainedTriple
+      puts "Nothing to update"
+      return
+    end
+    
+    depth = @window.spinBoxExplainLimit.value()
+    vertical = @window.radioButton_2.isChecked()
+
+    explanation = @sempr.explainTriple(@lastExplainedTriple, depth, vertical)
+
+    begin
+      svg = GraphViz.parse_string(explanation){}.output(:svg => String)
+      @svgWidget.load(Qt::ByteArray.new svg)
+    rescue
+      puts "Error creating Graph. Please try again."
+    end
+
+    zoom = @window.doubleSpinBoxZoom.value()
+    defSize = @svgWidget.renderer().defaultSize()
+    @svgWidget.setFixedWidth(defSize.width()*zoom)
+    @svgWidget.setFixedHeight(defSize.height()*zoom)
+  end
 end
 
 

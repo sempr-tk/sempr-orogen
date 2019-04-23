@@ -23,7 +23,7 @@
    <item row="0" column="0">
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>1</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="tab">
       <property name="sizePolicy">
@@ -33,7 +33,7 @@
        </sizepolicy>
       </property>
       <attribute name="title">
-       <string>Tab 1</string>
+       <string>Triples</string>
       </attribute>
       <layout class="QHBoxLayout" name="horizontalLayout_2">
        <item>
@@ -50,7 +50,7 @@
            <item>
             <widget class="QLabel" name="label">
              <property name="text">
-              <string>Filter:</string>
+              <string>Search:</string>
              </property>
             </widget>
            </item>
@@ -99,7 +99,7 @@
      </widget>
      <widget class="QWidget" name="tab_2">
       <attribute name="title">
-       <string>Tab 2</string>
+       <string>Explanation</string>
       </attribute>
       <layout class="QGridLayout" name="gridLayout_4">
        <item row="2" column="0">
@@ -107,7 +107,11 @@
          <item>
           <layout class="QHBoxLayout" name="horizontalLayout_3">
            <item>
-            <widget class="QSpinBox" name="spinBoxExplainLimit"/>
+            <widget class="QSpinBox" name="spinBoxExplainLimit">
+             <property name="prefix">
+              <string>Depth: </string>
+             </property>
+            </widget>
            </item>
            <item>
             <widget class="QRadioButton" name="radioButton">
@@ -138,6 +142,34 @@
               </size>
              </property>
             </spacer>
+           </item>
+           <item>
+            <widget class="QDoubleSpinBox" name="doubleSpinBoxZoom">
+             <property name="minimumSize">
+              <size>
+               <width>150</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="prefix">
+              <string>Zoom: </string>
+             </property>
+             <property name="decimals">
+              <number>1</number>
+             </property>
+             <property name="minimum">
+              <double>0.500000000000000</double>
+             </property>
+             <property name="maximum">
+              <double>5.000000000000000</double>
+             </property>
+             <property name="singleStep">
+              <double>0.100000000000000</double>
+             </property>
+             <property name="value">
+              <double>1.500000000000000</double>
+             </property>
+            </widget>
            </item>
           </layout>
          </item>
