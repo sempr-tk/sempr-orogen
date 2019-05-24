@@ -123,6 +123,7 @@ void SEMPREnvironment::initializeSEMPR()
         e->loaded();
     }
 
+    // setup object anchoring
     anchoring_ = new anchoring::SimpleAnchoring(sempr_);
     anchoring_->setVisualSim(new anchoring::VisualSim(sempr_, ""));
     anchoring_->setLogger(std::make_shared<anchoring::LoggerOStream>(&std::cout));
@@ -611,16 +612,34 @@ bool SEMPREnvironment::startHook()
         return false;
     return true;
 }
+
 void SEMPREnvironment::updateHook()
 {
     SEMPREnvironmentBase::updateHook();
+    // ??? will this even be called? Since we have the detectionArrayTransformerCallback?
+}
 
-    // TODO: anchoring
 
-    // update only on input of detectionArray
-    mars::Detection3DArray detections;
-    auto status = _detectionArray.read(detections);
-    if (status != RTT::FlowStatus::NewData) return;
+void SEMPREnvironment::detectionArrayTransformerCallback(const base::Time &ts, const ::mars::Detection3DArray &detections)
+{
+    // get the transformation from cam to map
+    Eigen::Affine3d tf;
+    if (!this->_camera2map.get(ts, tf, true)) 
+    {
+        std::cout << "detectionArrayTransformerCallback without a transformation!" << std::endl;
+        return;
+    }
+
+    std::cout << "detectionArrayTransformerCallback with transform:" << std::endl
+        << tf.matrix() << std::endl;
+    return;
+
+
+
+    // update only on input of detectionArray // given by the transformer / stream aligner
+    //mars::Detection3DArray detections;
+    //auto status = _detectionArray.read(detections);
+    //if (status != RTT::FlowStatus::NewData) return;
 
     // TODO: Update camera pose (relative to map)
     // anchoring_->getVisualSim()->setCameraPose(eigenaffine3d)

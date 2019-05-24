@@ -47,6 +47,18 @@ task_context "SEMPREnvironment" do
     # and most of the messages send over objectUpdates are just lost.
     output_port "objectUpdatesBatch", "/std/vector</sempr_rock/SpatialObject>"
 
+    # we need to transform the detection from the camera frame to the map frame:
+    # - tell the transformer we need "a" transformation between two frames
+    #   (the names are local and need to be configured at runtime)
+    # - tell the transformer we are going to apply the transformation on data from the
+    #   detectionArray port, so that it aligns the streams
+    transformer do
+        transform "camera", "map"
+        align_port "detectionArray"
+        max_latency 0.5
+    end
+
+
     # Trigger a republish of all known objects on the objectUpdates port
     operation('republish')
 
