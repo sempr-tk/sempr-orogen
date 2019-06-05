@@ -33,8 +33,21 @@ struct AnchoringConfig {
         the (simulated) camera frustum to allow adding it to the
         environment representation */
     bool requireFullyInViewToAdd = false;
+
+    /** How far a previously stored object may be away from a new detection
+     *  before it is considered a different instance.
+     */
+    float maxMatchingDistance = 0.3;
     
-    // TODO camera settings.
+    // camera settings.
+    /** Aperture angles of the (simulated) camera (radian)
+     */
+    float frustumAlpha = 3.14159 / 4., frustumBeta = 3.14159 / 4.;
+    
+    /** Range of the (simulated) camera
+     */
+    float frustumMin = 0.2, frustumMax = 5.0;
+    
 };
 
 }

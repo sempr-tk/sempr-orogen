@@ -126,6 +126,7 @@ void SEMPREnvironment::initializeSEMPR()
     anchoring_ = new anchoring::SimpleAnchoring(sempr_);
     anchoring_->setVisualSim(new anchoring::VisualSim(sempr_, ""));
     anchoring_->setLogger(std::make_shared<anchoring::LoggerOStream>(&std::cout));
+    anchoring_->getVisualSim()->setCameraPose(Eigen::Affine3d::Identity());
 
     // loading the RDFDocument is considered a real configuration, so it is done in the
     // configureHook.
@@ -554,7 +555,15 @@ bool SEMPREnvironment::configureHook()
     anchoring_->maxTimesUnseen(conf.maxTimesUnseen);
     anchoring_->maxDurationUnseen(conf.maxDurationUnseen);
     anchoring_->requireFullyInViewToAdd(conf.requireFullyInViewToAdd);
-
+    anchoring_->maxMatchingDistance(conf.maxMatchingDistance);
+    anchoring_->getVisualSim()->setFrustum(
+        {
+            conf.frustumAlpha,
+            conf.frustumBeta,
+            conf.frustumMin,
+            conf.frustumMax
+        }
+    );
 
     // old: rules for soprano
     // also, load the rules
@@ -627,6 +636,8 @@ void SEMPREnvironment::updateHook()
     anchoring::Detection3DArray darr;
     mars2sempr(detections, darr);
 
+    // TODO: get and process a pointcloud. This is not even implemented in
+    //  the anchoring, so don't bother for now...
     pcl::PointCloud<pcl::PointXYZ> cloud;
     cloud.push_back(pcl::PointXYZ(0, 0, 0));
     pcl::PCLPointCloud2::Ptr cloudmsg(new pcl::PCLPointCloud2());
