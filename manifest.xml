@@ -21,4 +21,5 @@
   <depend package="soprano" />
   <depend package="simulation/orogen/mars" />
   <depend package="ruby-graphviz" />
+  <depend package="hybrit/orogen/hybrit_rock_msgs" />
 </package>

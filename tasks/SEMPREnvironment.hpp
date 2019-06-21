@@ -47,11 +47,6 @@ namespace sempr {
         void initializeSEMPR();
 
 
-        /**
-            Publish a (visualization) update for an object
-        */
-        void publishUpdateFor(sempr::entity::SpatialObject::Ptr object);
-
         /* Add an assertion to an object.
         Adds an rdf triple that is bound to the given object (will be removed together with the
         object)
