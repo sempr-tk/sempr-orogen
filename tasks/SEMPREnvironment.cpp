@@ -618,7 +618,7 @@ void SEMPREnvironment::updateHook()
     // TODO: Update camera pose (relative to map)
     // anchoring_->getVisualSim()->setCameraPose(eigenaffine3d)
     anchoring::Detection3DArray darr;
-    mars2sempr(detections, darr);
+    mars2sempr(detections, darr, _anchoring_config.get().fakeRecognition);
 
     // TODO: get and process a pointcloud. This is not even implemented in
     //  the anchoring, so don't bother for now...

@@ -133,11 +133,11 @@ void mars2sempr(const mars::BoundingBox3D& in, anchoring::BoundingBox3D& out)
     out.size = in.size;
 }
 
-void mars2sempr(const mars::Detection3D& in, anchoring::Detection3D& out)
+void mars2sempr(const mars::Detection3D& in, anchoring::Detection3D& out, bool addSimulationID)
 {
     mars2sempr(in.bbox, out.bbox);
     out.results.resize(1);
-    mars2sempr(in.results[0], out.results[0]);
+    mars2sempr(in.results[0], out.results[0], addSimulationID);
     pcl::PointCloud<pcl::PointXYZRGB> cloud;
 
     bool use_color = in.source_cloud.colors.size() == in.source_cloud.points.size();
@@ -161,12 +161,12 @@ void mars2sempr(const mars::Detection3D& in, anchoring::Detection3D& out)
     pcl::toPCLPointCloud2(cloud, out.source_cloud);
 }
 
-void mars2sempr(const mars::Detection3DArray& in, anchoring::Detection3DArray& out)
+void mars2sempr(const mars::Detection3DArray& in, anchoring::Detection3DArray& out, bool addSimulationID)
 {
     out.resize(in.detections.size());
     for (size_t i = 0; i < in.detections.size(); i++)
     {
-        mars2sempr(in.detections[i], out[i]);
+        mars2sempr(in.detections[i], out[i], addSimulationID);
     }
 }
 
