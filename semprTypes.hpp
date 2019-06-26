@@ -48,6 +48,11 @@ struct AnchoringConfig {
      */
     float frustumMin = 0.2, frustumMax = 5.0;
     
+    /** Whether the detections are from the fake_object_recognition or not.
+     *  If true, the simulationID will be added as additional information
+     *  to the object.
+     */
+    bool fakeRecognition = false;
 };
 
 }

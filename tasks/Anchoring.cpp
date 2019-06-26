@@ -170,12 +170,18 @@ void mars2sempr(const mars::Detection3DArray& in, anchoring::Detection3DArray& o
     }
 }
 
-void mars2sempr(const mars::ObjectHypothesisWithPose& in, anchoring::ObjectHypothesis& out)
+void mars2sempr(const mars::ObjectHypothesisWithPose& in, anchoring::ObjectHypothesis& out, bool addSimulationID)
 {
     out.id = in.id;
     out.pose = in.pose.pose.toTransform();
     out.score = in.score;
     out.id_str = in.type;
+
+    // hack in case the fake object recognition is used: add the property "<object> <http://trans.fit/simulationID> id" again
+    if (addSimulationID)
+    {
+        out.extra_info["http://trans.fit/simulationID"] = std::to_string(in.id);
+    }
 
     // if the detections are from the fake object recognition there is no prefix. In that case,
     // add one.

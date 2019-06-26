@@ -634,6 +634,7 @@ void SEMPREnvironment::updateHook()
     // (see the CallbackModule added to sempr)
     _objectUpdatesBatch.write(pendingVizUpdates_);
 
+
     // also, use this to publish a message with the latest updates in a format
     // compatible to the hybrit EnvMonitor
     hybrit_rock_msgs::EnvUpdate update;
