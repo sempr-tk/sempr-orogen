@@ -13,12 +13,6 @@
         <rdfs:seeAlso rdf:resource="http://www.w3.org/2000/01/rdf-schema-more"/>
         <owl:versionInfo>$Date: 2009/11/15 10:54:12 $</owl:versionInfo>
         <dc:title>The OWL 2 Schema vocabulary (OWL 2)</dc:title>
-        <rdfs:isDefinedBy rdf:resource="http://www.w3.org/TR/owl2-rdf-based-semantics/"/>
-        <rdfs:seeAlso rdf:resource="http://www.w3.org/TR/owl2-rdf-based-semantics/#table-axiomatic-properties"/>
-        <dc:title>The RDF Schema vocabulary (RDFS)</dc:title>
-        <rdfs:isDefinedBy rdf:resource="http://www.w3.org/TR/owl2-mapping-to-rdf/"/>
-        <data-view:namespaceTransformation rdf:resource="http://dev.w3.org/cvsweb/2009/owl-grddl/owx2rdf.xsl"/>
-        <rdfs:isDefinedBy rdf:resource="http://www.w3.org/TR/owl2-syntax/"/>
         <rdfs:comment>
   This ontology partially describes the built-in classes and
   properties that together form the basis of the RDF/XML syntax of OWL 2.
@@ -37,6 +31,12 @@
   will cause it to become an OWL 2 Full ontology and may have other,
   unexpected, consequences.
    </rdfs:comment>
+        <rdfs:isDefinedBy rdf:resource="http://www.w3.org/TR/owl2-rdf-based-semantics/"/>
+        <rdfs:seeAlso rdf:resource="http://www.w3.org/TR/owl2-rdf-based-semantics/#table-axiomatic-properties"/>
+        <rdfs:isDefinedBy rdf:resource="http://www.w3.org/TR/owl2-mapping-to-rdf/"/>
+        <data-view:namespaceTransformation rdf:resource="http://dev.w3.org/cvsweb/2009/owl-grddl/owx2rdf.xsl"/>
+        <dc:title>The RDF Schema vocabulary (RDFS)</dc:title>
+        <rdfs:isDefinedBy rdf:resource="http://www.w3.org/TR/owl2-syntax/"/>
         <rdfs:seeAlso rdf:resource="http://www.w3.org/TR/owl2-rdf-based-semantics/#table-axiomatic-classes"/>
     </owl:Ontology>
     
@@ -825,6 +825,14 @@
     
 
 
+    <!-- http://trans.fit/Container -->
+
+    <owl:Class rdf:about="http://trans.fit/Container">
+        <rdfs:subClassOf rdf:resource="http://trans.fit/SpatialObject"/>
+    </owl:Class>
+    
+
+
     <!-- http://trans.fit/Foo -->
 
     <owl:Class rdf:about="http://trans.fit/Foo">
@@ -833,9 +841,77 @@
     
 
 
+    <!-- http://trans.fit/Food -->
+
+    <owl:Class rdf:about="http://trans.fit/Food">
+        <rdfs:subClassOf rdf:resource="http://trans.fit/SpatialObject"/>
+    </owl:Class>
+    
+
+
     <!-- http://trans.fit/SpatialObject -->
 
     <owl:Class rdf:about="http://trans.fit/SpatialObject"/>
+    
+
+
+    <!-- http://trans.fit/Tableware -->
+
+    <owl:Class rdf:about="http://trans.fit/Tableware">
+        <rdfs:subClassOf rdf:resource="http://trans.fit/SpatialObject"/>
+    </owl:Class>
+    
+
+
+    <!-- http://trans.fit/Tools -->
+
+    <owl:Class rdf:about="http://trans.fit/Tools">
+        <rdfs:subClassOf rdf:resource="http://trans.fit/SpatialObject"/>
+    </owl:Class>
+    
+
+
+    <!-- http://trans.fit/005_tomato_soup_can -->
+
+    <owl:Class rdf:about="http://trans.fit/005_tomato_soup_can">
+        <rdfs:subClassOf rdf:resource="http://trans.fit/Container"/>
+        <rdfs:subClassOf rdf:resource="http://trans.fit/Food"/>
+    </owl:Class>
+    
+
+
+    <!-- http://trans.fit/006_mustard_bottle -->
+
+    <owl:Class rdf:about="http://trans.fit/006_mustard_bottle">
+        <rdfs:subClassOf rdf:resource="http://trans.fit/Container"/>
+        <rdfs:subClassOf rdf:resource="http://trans.fit/Food"/>
+    </owl:Class>
+    
+
+
+    <!-- http://trans.fit/007_tuna_fish_can -->
+
+    <owl:Class rdf:about="http://trans.fit/007_tuna_fish_can">
+        <rdfs:subClassOf rdf:resource="http://trans.fit/Container"/>
+        <rdfs:subClassOf rdf:resource="http://trans.fit/Food"/>
+    </owl:Class>
+    
+
+
+    <!-- http://trans.fit/025_mug -->
+
+    <owl:Class rdf:about="http://trans.fit/025_mug">
+        <rdfs:subClassOf rdf:resource="http://trans.fit/Container"/>
+        <rdfs:subClassOf rdf:resource="http://trans.fit/Tableware"/>
+    </owl:Class>
+    
+
+
+    <!-- http://trans.fit/035_power_drill -->
+
+    <owl:Class rdf:about="http://trans.fit/035_power_drill">
+        <rdfs:subClassOf rdf:resource="http://trans.fit/Tools"/>
+    </owl:Class>
     
 
 
