@@ -642,7 +642,7 @@ void SEMPREnvironment::updateHook()
     update.time = base::Time::now();
     for (auto obj : pendingVizUpdates_)
     {
-        update.updated_objects.push_back(obj.id);
+        update.updated_objects.push_back(sempr::baseURI() + obj.id);
     }
 
     this->_env_update.write(update);
