@@ -60,8 +60,6 @@ namespace sempr {
         virtual void detectionArrayTransformerCallback(const base::Time &ts, const ::mars::Detection3DArray &detectionArray_sample) override;
 
 
-
-
         /* Add an assertion to an object.
         Adds an rdf triple that is bound to the given object (will be removed together with the
         object)

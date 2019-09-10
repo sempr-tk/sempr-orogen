@@ -64,9 +64,9 @@ void updateSpatialObject(entity::SpatialObject::Ptr obj, Detection const & detec
     Conversion functions mars <-> sempr-anchoring
 */
 void mars2sempr(const mars::BoundingBox3D& in, anchoring::BoundingBox3D& out);
-void mars2sempr(const mars::Detection3D& in, anchoring::Detection3D& out);
-void mars2sempr(const mars::Detection3DArray& in, anchoring::Detection3DArray& out);
-void mars2sempr(const mars::ObjectHypothesisWithPose& in, anchoring::ObjectHypothesis& out);
+void mars2sempr(const mars::Detection3D& in, anchoring::Detection3D& out, bool addSimulationID = false);
+void mars2sempr(const mars::Detection3DArray& in, anchoring::Detection3DArray& out, bool addSimulationID = false);
+void mars2sempr(const mars::ObjectHypothesisWithPose& in, anchoring::ObjectHypothesis& out, bool addSimulationID = false);
 
 } /* sempr */
 

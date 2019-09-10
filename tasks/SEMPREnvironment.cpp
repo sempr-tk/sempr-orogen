@@ -42,6 +42,8 @@
 #include <pcl/conversions.h>
 #include <pcl/point_representation.h>
 
+#include <hybrit_rock_msgs/EnvUpdate.hpp>
+
 using namespace sempr;
 using namespace sempr::core;
 using namespace sempr::storage;
@@ -127,35 +129,18 @@ void SEMPREnvironment::initializeSEMPR()
     anchoring_ = new anchoring::SimpleAnchoring(sempr_);
     anchoring_->setVisualSim(new anchoring::VisualSim(sempr_, ""));
     anchoring_->setLogger(std::make_shared<anchoring::LoggerOStream>(&std::cout));
+    anchoring_->getVisualSim()->setCameraPose(Eigen::Affine3d::Identity());
 
     // loading the RDFDocument is considered a real configuration, so it is done in the
     // configureHook.
 }
 
 
-void SEMPREnvironment::publishUpdateFor(sempr::entity::SpatialObject::Ptr object)
-{
-    std::cout << "publish update for " << object->id() << std::endl;
-    sempr_rock::SpatialObject msg;
-    msg.id = object->id();
-    auto tf = object->geometry()->getCS()->transformationToRoot();
-    msg.position = tf.translation();
-    msg.orientation = tf.rotation();
-    msg.type = object->type();
-    if (msg.type.empty()) msg.type = "unknown";
-
-    this->_objectUpdates.write(msg);
-}
-
+    
 void SEMPREnvironment::republish()
 {
     auto objects = std::make_shared<sempr::query::ObjectQuery<sempr::entity::SpatialObject>>();
     sempr_->answerQuery(objects);
-
-    for (auto obj : objects->results)
-    {
-        publishUpdateFor(obj);
-    }
 
     // also, as batch. workaround for connection problems (unbuffered data connection...)
     std::vector<sempr_rock::SpatialObject> batch;
@@ -555,7 +540,15 @@ bool SEMPREnvironment::configureHook()
     anchoring_->maxTimesUnseen(conf.maxTimesUnseen);
     anchoring_->maxDurationUnseen(conf.maxDurationUnseen);
     anchoring_->requireFullyInViewToAdd(conf.requireFullyInViewToAdd);
-
+    anchoring_->maxMatchingDistance(conf.maxMatchingDistance);
+    anchoring_->getVisualSim()->setFrustum(
+        {
+            conf.frustumAlpha,
+            conf.frustumBeta,
+            conf.frustumMin,
+            conf.frustumMax
+        }
+    );
 
     // old: rules for soprano
     // also, load the rules
@@ -644,8 +637,10 @@ void SEMPREnvironment::detectionArrayTransformerCallback(const base::Time &ts, c
     // TODO: Update camera pose (relative to map)
     // anchoring_->getVisualSim()->setCameraPose(eigenaffine3d)
     anchoring::Detection3DArray darr;
-    mars2sempr(detections, darr);
+    mars2sempr(detections, darr, _anchoring_config.get().fakeRecognition);
 
+    // TODO: get and process a pointcloud. This is not even implemented in
+    //  the anchoring, so don't bother for now...
     pcl::PointCloud<pcl::PointXYZ> cloud;
     cloud.push_back(pcl::PointXYZ(0, 0, 0));
     pcl::PCLPointCloud2::Ptr cloudmsg(new pcl::PCLPointCloud2());
@@ -653,57 +648,26 @@ void SEMPREnvironment::detectionArrayTransformerCallback(const base::Time &ts, c
 
     auto updatedObjects = anchoring_->anchoring(darr, cloudmsg);
 
-    /*
-    for (auto obj : updatedObjects)
-    {
-        publishUpdateFor(obj);
-    }
-    */
-
     // after every processing of a detection array, the changes on
     // spatial objects are represented in pendingVizUpdates_.
     // (see the CallbackModule added to sempr)
     _objectUpdatesBatch.write(pendingVizUpdates_);
+
+
+    // also, use this to publish a message with the latest updates in a format
+    // compatible to the hybrit EnvMonitor
+    hybrit_rock_msgs::EnvUpdate update;
+    update.frame_id = "";
+    update.time = base::Time::now();
+    for (auto obj : pendingVizUpdates_)
+    {
+        update.updated_objects.push_back(sempr::baseURI() + obj.id);
+    }
+
+    this->_env_update.write(update);
+
+    // clear the list of pending updates
     pendingVizUpdates_.clear();
-
-    // // compute matches
-    // std::vector<sempr::Detection> detectionPairs;
-    // for (auto d : detections.detections)
-    // {
-    //     detectionPairs.push_back(Detection("http://trans.fit/" + d.results[0].type, d.results[0].pose.pose));
-    // }
-    //
-    // std::vector<entity::SpatialObject::Ptr> matches;
-    // sempr::getMatchingObjects(sempr_, detectionPairs, matches);
-    //
-    // for (int i = 0; i < detections.detections.size(); i++)
-    // {
-    //     // std::cout   << "detected: " << std::setw(21) << std::left
-    //                 // << detections.detections[i].results[0].type
-    //                 // << " --> "
-    //                 // << (matches[i] ? matches[i]->id() : " nullptr ") << std::endl;
-    //
-    //
-    //     SpatialObject::Ptr object;
-    //     if (!matches[i])
-    //     {
-    //         auto obj = createSpatialObject(sempr_);
-    //         updateSpatialObject(obj, detectionPairs[i]);
-    //         std::cout << "created: " << obj->id() << '\n';
-    //         object = obj;
-    //
-    //     } else {
-    //         updateSpatialObject(matches[i], detectionPairs[i]);
-    //         std::cout << "updated: " << matches[i]->id() << std::endl;
-    //         object = matches[i];
-    //     }
-    //
-    //     // when using the fake object detection we also get the id of the object
-    //     (*object->properties())("simulationID", "http://trans.fit/") = (int) detections.detections[i].results[0].id;
-    //     object->properties()->changed();
-    //
-    // }
-
 }
 
 

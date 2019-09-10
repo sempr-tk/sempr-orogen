@@ -1,4 +1,8 @@
 name "sempr"
+
+using_library "hybrit_rock_msgs"
+import_types_from "hybrit_rock_msgs"
+
 # Optionally declare the version number
 # version "0.1"
 
@@ -9,7 +13,7 @@ using_library "sempr-core"
 using_library "sempr_rock"
 using_library "sempr-rete-reasoning"
 using_library "sempr-anchoring"
-import_types_from "sempr_types"
+#using_library "hybrit_rock_msgs"
 #import_types_from "sempr_rock/ObjectMessages.hpp"
 
 # If this project uses data types that are defined in other oroGen projects,
@@ -18,6 +22,9 @@ import_types_from "std"
 import_types_from "mars"
 import_types_from "base"
 import_types_from "semprTypes.hpp" # for the config object
+
+import_types_from "sempr_types"
+
 
 # Declare a new task context (i.e., a component)
 #
@@ -58,6 +65,8 @@ task_context "SEMPREnvironment" do
         max_latency 0.5
     end
 
+    # publish update messages just like in hybrit, to reuse the hybrit/orogen/hybrit_monitors
+    output_port("env_update", "/hybrit_rock_msgs/EnvUpdate")
 
     # Trigger a republish of all known objects on the objectUpdates port
     operation('republish')
