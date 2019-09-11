@@ -1,9 +1,13 @@
+require 'rock/bundle'
 require 'orocos'
 require 'readline'
 require 'transformer/runtime'
 
+Bundles.initialize
+
 include Orocos
 Orocos.initialize
+Orocos.transformer.load_conf(Bundles.find_file('config/transformer', 'rh5_mars_transforms.rb'))
 
 #Orocos.run 'sempr::SEMPREnvironment' => 'sempr',
 #           'sempr::SEMPRTestDummy' => 'dummy', :gdb => ['sempr'] do
@@ -17,12 +21,12 @@ Orocos.run 'sempr::SEMPREnvironment' => 'sempr' do
     mars.detectionArray.connect_to sempr.detectionArray
 
     
-    sempr.camera_frame = "Camera_Right"
+    sempr.camera_frame = "RH5_Root_Link"
     sempr.map_frame = "world"
     Orocos.transformer.setup(sempr)
 
-    sempr.rdf_file = "../resources/combined.owl"
-    sempr.rules_file = "../resources/owl.rules"
+    sempr.rdf_file = Bundles.find_file("config/sempr/resources", "combined.owl")
+    sempr.rules_file = Bundles.find_file("config/sempr/resources", "owl.rules")
     sempr.configure
     sempr.start
 
