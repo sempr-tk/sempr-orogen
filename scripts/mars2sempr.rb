@@ -1,5 +1,6 @@
 require 'orocos'
 require 'readline'
+require 'transformer/runtime'
 
 include Orocos
 Orocos.initialize
@@ -15,7 +16,10 @@ Orocos.run 'sempr::SEMPREnvironment' => 'sempr' do
 
     mars.detectionArray.connect_to sempr.detectionArray
 
-#    Orocos.transformer.setup(mars, sempr)
+    
+    sempr.camera_frame = "Camera_Right"
+    sempr.map_frame = "world"
+    Orocos.transformer.setup(sempr)
 
     sempr.rdf_file = "../resources/combined.owl"
     sempr.rules_file = "../resources/owl.rules"
