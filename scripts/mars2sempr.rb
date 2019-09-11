@@ -21,7 +21,7 @@ Orocos.run 'sempr::SEMPREnvironment' => 'sempr' do
     mars.detectionArray.connect_to sempr.detectionArray
 
     
-    sempr.camera_frame = "RH5_Root_Link"
+    sempr.camera_frame = "link_Camera_right"
     sempr.map_frame = "world"
     Orocos.transformer.setup(sempr)
 
