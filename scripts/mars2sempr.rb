@@ -1,13 +1,16 @@
+require 'vizkit'
 require 'rock/bundle'
 require 'orocos'
 require 'readline'
 require 'transformer/runtime'
+    
 
 Bundles.initialize
 
 include Orocos
 Orocos.initialize
 Orocos.transformer.load_conf(Bundles.find_file('config/transformer', 'rh5_mars_transforms.rb'))
+
 
 #Orocos.run 'sempr::SEMPREnvironment' => 'sempr',
 #           'sempr::SEMPRTestDummy' => 'dummy', :gdb => ['sempr'] do
@@ -27,12 +30,25 @@ Orocos.run 'sempr::SEMPREnvironment' => 'sempr' do
 
     sempr.rdf_file = Bundles.find_file("config/sempr/resources", "combined.owl")
     sempr.rules_file = Bundles.find_file("config/sempr/resources", "owl.rules")
+    sempr.anchoring_config do |p|
+      p.fakeRecognition = true
+      p.frustumMax = 100
+      p.frustumAlpha = 1.5
+      p.frustumBeta = 1.5
+      p.requireFullyInViewToAdd = true
+    end
     sempr.configure
     sempr.start
+
+    Vizkit.display sempr
+    sov = Vizkit.default_loader.SpatialObjectVisualization
+    Vizkit.display sempr.objectUpdatesBatch, :widget => sov
+
+    Vizkit.exec
 
 #    dummy.sempr_task_name = "sempr"
 #    dummy.configure
 #    dummy.start
 
-    Readline::readline("Press ENTER to exit\n")
+#    Readline::readline("Press ENTER to exit\n")
 end
