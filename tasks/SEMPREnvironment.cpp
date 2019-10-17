@@ -615,6 +615,12 @@ void SEMPREnvironment::updateHook()
 
 void SEMPREnvironment::detectionArrayTransformerCallback(const base::Time &ts, const ::mars::Detection3DArray &detections)
 {
+    // I believe that the fake object recognition is wrong.
+    // There is a orientation offset defined at "Camera_Right" in MARS,
+    // but I only get the transformation to "link_Camera_right", to which
+    // "Camera_Right" is attached.
+    auto camOffset = Eigen::Quaterniond(0.5, -0.5, 0.5, 0.5).inverse();
+
     // get the transformation from cam to map
     Eigen::Affine3d tf;
     if (!this->_camera2map.get(ts, tf, true)) 
@@ -625,19 +631,61 @@ void SEMPREnvironment::detectionArrayTransformerCallback(const base::Time &ts, c
 
     std::cout << "detectionArrayTransformerCallback with transform:" << std::endl
         << tf.matrix() << std::endl;
-    return;
 
+    // Update camera pose (relative to map)
+    auto camZtoX = Eigen::Quaterniond(1, 0, 1, 0).normalized();
+    std::cout << "camZtoX: x: " 
+        << camZtoX.x() << ", y:"
+        << camZtoX.y() << ", z:"
+        << camZtoX.z() << ", w:"
+        << camZtoX.w() << std::endl;
+    anchoring_->getVisualSim()->setCameraPose(tf * camZtoX);
 
-
-    // update only on input of detectionArray // given by the transformer / stream aligner
-    //mars::Detection3DArray detections;
-    //auto status = _detectionArray.read(detections);
-    //if (status != RTT::FlowStatus::NewData) return;
-
-    // TODO: Update camera pose (relative to map)
-    // anchoring_->getVisualSim()->setCameraPose(eigenaffine3d)
     anchoring::Detection3DArray darr;
     mars2sempr(detections, darr, _anchoring_config.get().fakeRecognition);
+
+    // DEBUG: add a "gaze" object to see where the virtual camera (VisualSim)
+    // is aiming at. Should be aiming at. ... 
+    anchoring::Detection3D gaze;
+    gaze.bbox.center = Eigen::Affine3d::Identity();
+    gaze.bbox.size = Eigen::Vector3d(0,0,0);
+    gaze.results.resize(1);
+    gaze.results[0].id_str = "gaze";
+    gaze.results[0].pose = Eigen::Affine3d::Identity();
+    // VisualSim expects objects in the Z direction.
+    gaze.results[0].pose.translation() = Eigen::Vector3d(0, 0, 2);
+    // camZtoX is the transformation to fix this for rock cameras, which look into X direction.
+    // (at least the frame in the urdf has X pointing forward.)
+    // camOffset.inverse() is used to cancel the "camOffset" added to all detections from the
+    // object recognition. It is added in the first place to compensate for the fact that
+    // the fake object recognition gives us poses that are *not* in link_Camera_right,
+    // but in "Camera_Right". But "Camera_Right" is not available in the transformer, as
+    // it is not part of the URDF, but is the result of adding an internal position and
+    // orientation offset to the camera *sensor* in mars.
+    // (mars -> entity viewer -> sensors -> Camera_Right has a parent frame and the mentioned
+    // orientation offset, which is canceled by camOffset.)
+    gaze.results[0].pose = camOffset.inverse() * camZtoX * gaze.results[0].pose;
+    gaze.results[0].score = 10.;
+
+    std::cout << "gaze initial: " << std::endl << gaze.results[0].pose.matrix() << std::endl;
+
+    darr.push_back(gaze);
+
+    //tf = tf.inverse();
+
+    // transform all detections into the map coordinate system
+    for (auto& detection : darr)
+    {
+        detection.bbox.center = tf * camOffset * detection.bbox.center;
+
+        // empty the source_cloud: let sempr-anchoring create a default point
+        detection.source_cloud = pcl::PCLPointCloud2();
+        for (auto& result : detection.results)
+        {
+            result.pose = tf * camOffset * result.pose;
+        }
+    }
+
 
     // TODO: get and process a pointcloud. This is not even implemented in
     //  the anchoring, so don't bother for now...
