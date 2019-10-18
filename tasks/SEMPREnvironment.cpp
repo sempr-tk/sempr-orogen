@@ -369,14 +369,34 @@ std::vector<sempr_rock::Triple> SEMPREnvironment::listTriples(const std::string&
     );
     sempr_->answerQuery(query);
 
-    // object not found? ... uhm.
+    Eigen::Affine3d tf;
+    // object not found? ... uhm... try finding a LocalCS with that id.
     if (query->results.empty())
     {
-        return base::Pose(); // what is this? identity? invalid?
+        auto queryCS = std::make_shared<ObjectQuery<LocalCS>>(
+            [&arg0](LocalCS::Ptr cs) {
+                return (cs->id() == arg0) || ((sempr::baseURI() + cs->id()) == arg0);
+            }
+        );
+        sempr_->answerQuery(queryCS);
+
+        if (queryCS->results.empty())
+        {
+            return base::Pose(); // TODO How to signal an error here?
+        }
+        else
+        {
+            // it is indeed a LocalCS, get its pose.
+            tf = queryCS->results[0]->transformationToRoot();
+        }
+    }
+    else
+    {
+        // it is a SpatialObject, get the pose of its associated LocalCS
+        tf = query->results[0]->geometry()->getCS()->transformationToRoot();
     }
 
-    // get the pose
-    auto tf = query->results[0]->geometry()->getCS()->transformationToRoot();
+    // make it a base::Pose
     base::Pose pose;
     pose.fromTransform(tf);
 
