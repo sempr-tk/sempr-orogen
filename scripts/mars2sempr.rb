@@ -20,8 +20,10 @@ Orocos.run 'sempr::SEMPREnvironment' => 'sempr' do
     sempr = Orocos.name_service.get 'sempr'
 #    dummy = Orocos.name_service.get 'dummy'
     mars = Orocos.name_service.get 'rh5_mars_fake_object_recognition'
+    mars_astronaut = Orocos.name_service.get 'rh5_mars_astronaut_localizer'
 
     mars.detectionArray.connect_to sempr.detectionArray
+    mars_astronaut.connect_to sempr.astronautPose
 
     
     sempr.camera_frame = "link_Camera_right"

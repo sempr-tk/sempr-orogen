@@ -47,6 +47,9 @@ task_context "SEMPREnvironment" do
     # input from object detection
     input_port "detectionArray", "/mars/Detection3DArray"
 
+    # input from the astronaut detection
+    input_port "astronautPose", "/base/samples/RigidBodyState"
+
     # output objects for visualization purposes
     output_port "objectUpdates", "/sempr_rock/SpatialObject"
     # output objects in a batch for visualization purposes.
@@ -144,7 +147,7 @@ task_context "SEMPREnvironment" do
     # port_driven "input"
     # By default, the task will be periodic with a period of 0.1
     # periodic 0.1
-    port_driven "detectionArray"
+    port_driven "detectionArray", "astronautPose"
 end
 
 

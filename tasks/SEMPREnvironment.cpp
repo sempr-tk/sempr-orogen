@@ -133,6 +133,15 @@ void SEMPREnvironment::initializeSEMPR()
 
     // loading the RDFDocument is considered a real configuration, so it is done in the
     // configureHook.
+
+
+    // try to get the LocalCS that stores the astronauts pose
+    try {
+       astronautPose_ =  storage->load<sempr::entity::LocalCS>("AstronautPose");
+       astronautPose_->loaded();
+    } catch (std::exception& e) {
+        std::cout << "AstronautPose not loaded: " << e.what() << std::endl;
+    }
 }
 
 
@@ -629,7 +638,35 @@ bool SEMPREnvironment::startHook()
 void SEMPREnvironment::updateHook()
 {
     SEMPREnvironmentBase::updateHook();
-    // ??? will this even be called? Since we have the detectionArrayTransformerCallback?
+ 
+    // update the astronaut pose
+    base::samples::RigidBodyState rbs;
+    auto status = _astronautPose.read(rbs);
+    if (status != RTT::FlowStatus::NewData) return;
+
+    if (astronautPose_)
+    {
+        astronautPose_->setTransform(rbs.getTransform());
+        astronautPose_->changed();
+    }
+    else
+    {
+        // first time to get a pose -> create the object.
+        astronautPose_ = std::make_shared<sempr::entity::LocalCS>(
+            new sempr::core::PredefinedID("AstronautPose"));
+        astronautPose_->setTransform(rbs.getTransform());
+
+        // get the LocalCS_map and set it as a parent of the astronaut pose
+        auto query = std::make_shared<sempr::query::LoadingQuery<sempr::entity::LocalCS>>("LocalCS_map");
+        sempr_->answerQuery(query);
+        if (!query->results.empty())
+        {
+            astronautPose_->setParent(query->results[0]);
+
+            // announce it
+            astronautPose_->created();
+        }
+    }
 }
 
 

@@ -15,6 +15,10 @@ namespace sempr {
     namespace core {
         class Core;
     } /* core */
+
+    namespace entity {
+        class LocalCS;
+    };
 } /* sempr */
 
 namespace sempr {
@@ -40,6 +44,11 @@ namespace sempr {
             Methods for object anchoring
         */
         anchoring::SimpleAnchoring* anchoring_;
+
+        /**
+            The latest pose of the astronaut
+        */
+        std::shared_ptr<sempr::entity::LocalCS> astronautPose_;
 
         /**
             Initialize the sempr instance: Database, modules, ...
